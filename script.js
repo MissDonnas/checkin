@@ -81,7 +81,7 @@ studentsRef.on('value', (snapshot) => {
 
     // Clear any previously rendered students from the HTML display
     studentListContainer.innerHTML = '';
-
+    
     // Initialize counts for the status bar
     let totalStudentsDisplayed = 0;
     let presentStudents = 0;
