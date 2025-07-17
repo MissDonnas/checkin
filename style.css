@@ -5,7 +5,7 @@ body {
     padding: 20px;
     display: flex;
     justify-content: center;
-    align-items: flex-start; /* Align to top for longer content */
+    align-items: flex-start;
     min-height: 100vh;
     box-sizing: border-box;
 }
@@ -23,10 +23,70 @@ body {
 h1 {
     text-align: center;
     color: #333;
-    margin-bottom: 30px;
+    margin-bottom: 20px; /* Reduced margin to make space for status bar */
 }
 
-/* Removed add-student-btn and addStudentForm styles as they are no longer needed in HTML */
+/* NEW: Status Bar Styles */
+.status-bar {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background-color: #e9ecef; /* Light gray background */
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin-bottom: 20px; /* Space below status bar */
+    font-size: 0.95em;
+    color: #333;
+    border: 1px solid #dee2e6;
+}
+
+.status-bar span {
+    flex: 1; /* Distribute space evenly */
+    text-align: center;
+    padding: 0 5px;
+}
+
+.status-bar strong {
+    font-size: 1.1em;
+    color: #007bff; /* Blue for emphasis */
+}
+
+
+.top-buttons {
+    display: flex;
+    justify-content: space-around;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.action-btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    flex-grow: 1;
+    transition: background-color 0.3s ease;
+}
+
+.save-pdf-btn {
+    background-color: #17a2b8;
+    color: white;
+}
+
+.save-pdf-btn:hover {
+    background-color: #138496;
+}
+
+.reset-btn {
+    background-color: #dc3545;
+    color: white;
+}
+
+.reset-btn:hover {
+    background-color: #c82333;
+}
+
 
 .student-item {
     background-color: #f9f9f9;
@@ -35,8 +95,8 @@ h1 {
     margin-bottom: 10px;
     border-radius: 5px;
     display: flex;
-    flex-direction: column; /* Stack name and buttons */
-    gap: 10px; /* Space between elements */
+    flex-direction: column;
+    gap: 10px;
 }
 
 .student-item h3 {
@@ -53,7 +113,8 @@ h1 {
 
 .student-item .buttons {
     display: flex;
-    gap: 10px; /* Space between buttons */
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 .student-item button {
@@ -65,7 +126,7 @@ h1 {
     transition: background-color 0.3s ease;
 }
 
-.student-item button.check-in-btn { /* Changed class name for clarity */
+.student-item button.check-in-btn {
     background-color: #007bff;
     color: white;
 }
@@ -74,7 +135,7 @@ h1 {
     background-color: #0056b3;
 }
 
-.student-item button.check-out-btn { /* Changed class name for clarity */
+.student-item button.check-out-btn {
     background-color: #6c757d;
     color: white;
 }
@@ -83,4 +144,11 @@ h1 {
     background-color: #5a6268;
 }
 
-/* Removed delete-student styles as it's no longer needed in HTML */
+.student-item button.sunscreen-btn {
+    background-color: #ffc107;
+    color: #333;
+}
+
+.student-item button.sunscreen-btn:hover {
+    background-color: #e0a800;
+}
