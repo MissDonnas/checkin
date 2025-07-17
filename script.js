@@ -1,4 +1,3 @@
-
 const firebaseConfig = {
   apiKey: "AIzaSyBrK1aMhBv3SL-slt1ANo0XaYszc2fsPzQ",
   authDomain: "attendance-6abf9.firebaseapp.com",
@@ -10,7 +9,7 @@ const firebaseConfig = {
 };
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
-const database = firebase.database(); // Should be firebase.database()
+const database = firebase.database();
 const studentsRef = database.ref('students');
 
 // =======================================================
@@ -19,7 +18,7 @@ const studentsRef = database.ref('students');
 const savePdfButton = document.getElementById('savePdfButton');
 const resetAllButton = document.getElementById('resetAllButton');
 
-// NEW: Status Bar Elements
+// Status Bar Elements
 const totalStudentsCount = document.getElementById('totalStudentsCount');
 const studentsPresentCount = document.getElementById('studentsPresentCount');
 const studentsAbsentCount = document.getElementById('studentsAbsentCount');
@@ -36,9 +35,17 @@ studentsRef.on('value', (snapshot) => {
     let presentStudents = 0;
     let absentStudents = 0;
 
-    if (studentsData) {
-        Object.entries(studentsData).forEach(([studentId, student]) => {
-            totalStudents++; // Count total students
+    // Get all student item divs from the HTML
+    const studentItemsInHtml = document.querySelectorAll('.student-item');
+
+    // Loop through each student item found in the HTML
+    studentItemsInHtml.forEach(studentItemDiv => {
+        const studentId = studentItemDiv.dataset.id; // Get the data-id from the HTML
+        const student = studentsData ? studentsData[studentId] : null; // Get corresponding data from Firebase
+
+        // Only process if data exists for this student ID in Firebase
+        if (student) {
+            totalStudents++; // Count total students that have data in Firebase
 
             // Find the elements for this specific student in your HTML
             const lastCheckInElement = document.getElementById(`${studentId}-lastCheckIn`);
@@ -54,29 +61,33 @@ studentsRef.on('value', (snapshot) => {
                 lastCheckOutElement.textContent = lastCheckOut;
                 lastSunscreenElement.textContent = lastSunscreen;
 
-                // Determine student status for status bar (NEW LOGIC)
+                // Determine student status for status bar
                 const checkInTime = student.lastCheckIn ? new Date(student.lastCheckIn).getTime() : 0;
                 const checkOutTime = student.lastCheckOut ? new Date(student.lastCheckOut).getTime() : 0;
 
-                // A student is considered 'Present' if they have checked in AND
-                // their last check-in is more recent than their last check-out.
-                // If they've only checked in, they're also present.
                 if (checkInTime > 0 && (checkOutTime === 0 || checkInTime > checkOutTime)) {
                     presentStudents++;
                 } else {
                     absentStudents++;
                 }
-
             } else {
                 console.warn(`HTML elements for student ID "${studentId}" not found. Make sure data-id matches and IDs are correctly formatted in index.html.`);
             }
-        });
-    } else {
-        console.log("No student data in Firebase yet.");
-        document.querySelectorAll('.status-info strong').forEach(el => el.textContent = 'N/A');
-    }
+        } else {
+            // If a student exists in HTML but not in Firebase, set their status to N/A
+            const lastCheckInElement = document.getElementById(`${studentId}-lastCheckIn`);
+            const lastCheckOutElement = document.getElementById(`${studentId}-lastCheckOut`);
+            const lastSunscreenElement = document.getElementById(`${studentId}-lastSunscreen`);
+            if(lastCheckInElement) lastCheckInElement.textContent = 'N/A';
+            if(lastCheckOutElement) lastCheckOutElement.textContent = 'N/A';
+            if(lastSunscreenElement) lastSunscreenElement.textContent = 'N/A';
+            // Also count them as absent if they're in HTML but no data in Firebase
+            absentStudents++;
+            totalStudents++; // Still count them in total if they are in HTML
+        }
+    });
 
-    // Update the status bar counts (NEW)
+    // Update the status bar counts
     totalStudentsCount.textContent = totalStudents;
     studentsPresentCount.textContent = presentStudents;
     studentsAbsentCount.textContent = absentStudents;
@@ -164,7 +175,6 @@ async function saveAsPdf() {
         return;
     }
 
-    // Temporarily hide the buttons for a cleaner PDF capture
     const buttons = document.querySelectorAll('.student-item .buttons');
     buttons.forEach(btnContainer => btnContainer.style.display = 'none');
 
@@ -197,7 +207,6 @@ async function saveAsPdf() {
         console.error("Error generating PDF:", error);
         alert("Failed to generate PDF. Please check the console for details.");
     } finally {
-        // Show buttons again
         buttons.forEach(btnContainer => btnContainer.style.display = 'flex');
     }
 }
