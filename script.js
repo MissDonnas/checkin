@@ -1,19 +1,22 @@
-// =======================================================
-// STEP 1: PASTE YOUR FIREBASE CONFIGURATION HERE
-// Replace the placeholders with your actual Firebase config from the Console
-// =======================================================
+
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",             // e.g., "AIzaSyC..."
-  authDomain: "YOUR_AUTH_DOMAIN",     // e.g., "your-project-id.firebaseapp.com"
-  projectId: "YOUR_PROJECT_ID",       // e.g., "your-project-id"
-  storageBucket: "YOUR_STORAGE_BUCKET", // e.g., "your-project-id.appspot.com"
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID", // e.g., "..."
-  appId: "YOUR_APP_ID",               // e.g., "1:..."
-  databaseURL: "YOUR_DATABASE_URL"    // e.g., "https://your-project-id-default-rtdb.firebaseio.com"
+  apiKey: "AIzaSyBrK1aMhBv3SL-slt1ANo0XaYszc2fsPzQ",
+  authDomain: "attendance-6abf9.firebaseapp.com",
+  databaseURL: "https://attendance-6abf9-default-rtdb.firebaseio.com",
+  projectId: "attendance-6abf9",
+  storageBucket: "attendance-6abf9.firebasestorage.app",
+  messagingSenderId: "557254925412",
+  appId: "1:557254925412:web:3c31d0a9e07a6477db5371"
 };
 
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
 
 // Get a reference to the Realtime Database service
 const database = firebase.database();
