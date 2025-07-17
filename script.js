@@ -23,6 +23,7 @@ const database = firebase.database();
 // Get a reference to the 'students' node in your database
 const studentsRef = database.ref('students');
 
+
 // =======================================================
 // STEP 2: DOM Element References
 // =======================================================
@@ -34,17 +35,18 @@ const submitNewStudentButton = document.getElementById('submitNewStudent');
 const cancelAddStudentButton = document.getElementById('cancelAddStudent');
 
 // =======================================================
-// STEP 3: Event Listeners for Adding New Students
+// STEP 3: Event Listeners for Adding New Students (Corrected)
 // =======================================================
 
 addStudentButton.addEventListener('click', () => {
     addStudentForm.classList.remove('hidden'); // Show the form
-    addStudentButton.style.display = 'none'; // Hide the add button
+    addStudentButton.style.display = 'none';   // Hide the add button
+    newStudentNameInput.focus(); // Focus on the input for convenience
 });
 
 cancelAddStudentButton.addEventListener('click', () => {
-    addStudentForm.classList.add('hidden'); // Hide the form
-    addStudentButton.style.display = 'block'; // Show the add button
+    addStudentForm.classList.add('hidden');    // Hide the form
+    addStudentButton.style.display = 'block';  // Show the add button
     newStudentNameInput.value = ''; // Clear input
 });
 
@@ -82,8 +84,6 @@ studentsRef.on('value', (snapshot) => {
 
     if (studentsData) {
         // Convert the object of students into an array for easier sorting
-        // and iterate through it.
-        // Object.entries returns [key, value] pairs, e.g., ["-MiL_...", {name: "Alice", ...}]
         const studentEntries = Object.entries(studentsData);
 
         // Sort students alphabetically by name
@@ -97,9 +97,8 @@ studentsRef.on('value', (snapshot) => {
 
         if (studentEntries.length === 0) {
              studentListDiv.innerHTML = '<p>No students added yet. Click "Add New Student" to begin!</p>';
-             return;
+             return; // Exit if no students
         }
-
 
         studentEntries.forEach(([studentId, student]) => {
             const studentItem = document.createElement('div');
