@@ -25,145 +25,68 @@ const studentsRef = database.ref('students');
 
 
 // =======================================================
-// STEP 2: DOM Element References
-// =======================================================
-const studentListDiv = document.getElementById('student-list');
-const addStudentButton = document.getElementById('addStudentButton');
-const addStudentForm = document.getElementById('addStudentForm');
-const newStudentNameInput = document.getElementById('newStudentName');
-const submitNewStudentButton = document.getElementById('submitNewStudent');
-const cancelAddStudentButton = document.getElementById('cancelAddStudent');
-
-// =======================================================
-// STEP 3: Event Listeners for Adding New Students (Corrected)
-// =======================================================
-
-addStudentButton.addEventListener('click', () => {
-    addStudentForm.classList.remove('hidden'); // Show the form
-    addStudentButton.style.display = 'none';   // Hide the add button
-    newStudentNameInput.focus(); // Focus on the input for convenience
-});
-
-cancelAddStudentButton.addEventListener('click', () => {
-    addStudentForm.classList.add('hidden');    // Hide the form
-    addStudentButton.style.display = 'block';  // Show the add button
-    newStudentNameInput.value = ''; // Clear input
-});
-
-submitNewStudentButton.addEventListener('click', async () => {
-    const studentName = newStudentNameInput.value.trim();
-    if (studentName) {
-        try {
-            // Generate a unique key for the new student
-            const newStudentRef = studentsRef.push();
-            await newStudentRef.set({
-                name: studentName,
-                lastCheckIn: null,
-                lastCheckOut: null
-            });
-            console.log(`Added new student: ${studentName}`);
-            newStudentNameInput.value = ''; // Clear input field
-            addStudentForm.classList.add('hidden'); // Hide the form
-            addStudentButton.style.display = 'block'; // Show the add button
-        } catch (error) {
-            console.error("Error adding new student:", error);
-            alert("Failed to add student. Check console for details.");
-        }
-    } else {
-        alert("Student name cannot be empty!");
-    }
-});
-
-// =======================================================
-// STEP 4: Realtime Data Loading and Display
+// STEP 2: Realtime Data Loading and Display (Updates existing elements)
 // This function runs every time the 'students' data changes in Firebase
 // =======================================================
 studentsRef.on('value', (snapshot) => {
     const studentsData = snapshot.val(); // Get all students data as an object
-    studentListDiv.innerHTML = ''; // Clear current list to re-render
 
     if (studentsData) {
-        // Convert the object of students into an array for easier sorting
-        const studentEntries = Object.entries(studentsData);
+        // Iterate through each student in the data received from Firebase
+        Object.entries(studentsData).forEach(([studentId, student]) => {
+            // Find the elements for this specific student in your HTML
+            const lastCheckInElement = document.getElementById(`${studentId}-lastCheckIn`);
+            const lastCheckOutElement = document.getElementById(`${studentId}-lastCheckOut`);
 
-        // Sort students alphabetically by name
-        studentEntries.sort((a, b) => {
-            const nameA = a[1].name.toLowerCase();
-            const nameB = b[1].name.toLowerCase();
-            if (nameA < nameB) return -1;
-            if (nameA > nameB) return 1;
-            return 0;
+            if (lastCheckInElement && lastCheckOutElement) { // Ensure elements exist before updating
+                const lastCheckIn = student.lastCheckIn ? new Date(student.lastCheckIn).toLocaleString() : 'N/A';
+                const lastCheckOut = student.lastCheckOut ? new Date(student.lastCheckOut).toLocaleString() : 'N/A';
+
+                lastCheckInElement.textContent = lastCheckIn;
+                lastCheckOutElement.textContent = lastCheckOut;
+            } else {
+                console.warn(`HTML elements for student ID "${studentId}" not found. Make sure data-id matches and IDs are correctly formatted in index.html.`);
+            }
         });
-
-        if (studentEntries.length === 0) {
-             studentListDiv.innerHTML = '<p>No students added yet. Click "Add New Student" to begin!</p>';
-             return; // Exit if no students
-        }
-
-        studentEntries.forEach(([studentId, student]) => {
-            const studentItem = document.createElement('div');
-            studentItem.classList.add('student-item');
-
-            const lastCheckIn = student.lastCheckIn ? new Date(student.lastCheckIn).toLocaleString() : 'N/A';
-            const lastCheckOut = student.lastCheckOut ? new Date(student.lastCheckOut).toLocaleString() : 'N/A';
-
-            studentItem.innerHTML = `
-                <h3>${student.name}</h3>
-                <div class="status-info">
-                    <p>Last Check In: <strong>${lastCheckIn}</strong></p>
-                    <p>Last Check Out: <strong>${lastCheckOut}</strong></p>
-                </div>
-                <div class="buttons">
-                    <button class="check-in" data-id="${studentId}">Check In</button>
-                    <button class="check-out" data-id="${studentId}">Check Out</button>
-                    <button class="delete-student" data-id="${studentId}">Delete</button>
-                </div>
-            `;
-            studentListDiv.appendChild(studentItem);
-        });
-
-        // After rendering, attach event listeners to new buttons
-        attachButtonListeners();
-
     } else {
-        studentListDiv.innerHTML = '<p>No students added yet. Click "Add New Student" to begin!</p>';
+        console.log("No student data in Firebase yet.");
+        // Optionally, reset all displayed times to N/A if database is empty
+        document.querySelectorAll('.status-info strong').forEach(el => el.textContent = 'N/A');
     }
 });
 
+
 // =======================================================
-// STEP 5: Attach Event Listeners to Dynamically Created Buttons
+// STEP 3: Attach Event Listeners to Buttons
+// This runs once when the page loads to attach listeners to all check-in/out buttons
 // =======================================================
-function attachButtonListeners() {
+document.addEventListener('DOMContentLoaded', () => {
     // Attach check-in listeners
-    document.querySelectorAll('.check-in').forEach(button => {
-        button.onclick = () => checkIn(button.dataset.id);
+    document.querySelectorAll('.check-in-btn').forEach(button => {
+        button.addEventListener('click', () => checkIn(button.dataset.id));
     });
 
     // Attach check-out listeners
-    document.querySelectorAll('.check-out').forEach(button => {
-        button.onclick = () => checkOut(button.dataset.id);
+    document.querySelectorAll('.check-out-btn').forEach(button => {
+        button.addEventListener('click', () => checkOut(button.dataset.id));
     });
+});
 
-    // Attach delete listeners
-    document.querySelectorAll('.delete-student').forEach(button => {
-        button.onclick = () => deleteStudent(button.dataset.id, button.closest('.student-item').querySelector('h3').textContent);
-    });
-}
 
 // =======================================================
-// STEP 6: Core Check-in / Check-out / Delete Functions
+// STEP 4: Core Check-in / Check-out Functions
 // =======================================================
 
 async function checkIn(studentId) {
     const timestamp = new Date().toISOString(); // ISO string format (e.g., "2025-07-16T22:05:00.000Z")
-    const studentRef = studentsRef.child(studentId); // Reference to specific student
+    const studentRef = studentsRef.child(studentId); // Reference to specific student's data
 
     try {
-        // Update lastCheckIn
+        // Update lastCheckIn property directly on the student object
         await studentRef.child('lastCheckIn').set(timestamp);
 
-        // Add to a list of all check-ins for this student
-        // 'push()' generates a unique key for each new entry
+        // Add to a list of all check-ins for this student (under 'checkIns' node)
+        // 'push()' generates a unique key for each new entry to prevent overwrites
         await studentRef.child('checkIns').push(timestamp);
         console.log(`Checked in student ${studentId} at ${timestamp}`);
     } catch (error) {
@@ -177,26 +100,14 @@ async function checkOut(studentId) {
     const studentRef = studentsRef.child(studentId);
 
     try {
-        // Update lastCheckOut
+        // Update lastCheckOut property directly on the student object
         await studentRef.child('lastCheckOut').set(timestamp);
 
-        // Add to a list of all check-outs for this student
+        // Add to a list of all check-outs for this student (under 'checkOuts' node)
         await studentRef.child('checkOuts').push(timestamp);
         console.log(`Checked out student ${studentId} at ${timestamp}`);
     } catch (error) {
         console.error("Error checking out:", error);
         alert("Failed to check out. Please try again.");
-    }
-}
-
-async function deleteStudent(studentId, studentName) {
-    if (confirm(`Are you sure you want to delete ${studentName}? This action cannot be undone.`)) {
-        try {
-            await studentsRef.child(studentId).remove();
-            console.log(`Deleted student: ${studentName} (${studentId})`);
-        } catch (error) {
-            console.error("Error deleting student:", error);
-            alert("Failed to delete student. Check console for details.");
-        }
     }
 }
