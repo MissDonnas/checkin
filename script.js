@@ -14,139 +14,98 @@ const database = firebase.database(); // Should be firebase.database()
 const studentsRef = database.ref('students');
 
 // =======================================================
-// STEP 2: DOM Element References
+// STEP 2: DOM Element References for new buttons and status bar
 // =======================================================
 const savePdfButton = document.getElementById('savePdfButton');
 const resetAllButton = document.getElementById('resetAllButton');
-const studentListContainer = document.getElementById('student-list');
-const noStudentsMessage = document.getElementById('noStudentsMessage');
 
-// Status Bar Elements
+// NEW: Status Bar Elements
 const totalStudentsCount = document.getElementById('totalStudentsCount');
 const studentsPresentCount = document.getElementById('studentsPresentCount');
 const studentsAbsentCount = document.getElementById('studentsAbsentCount');
 
 
 // =======================================================
-// STEP 3: Function to Create a Student HTML Element
-// This function generates the HTML structure for a single student card
-// =======================================================
-function createStudentHtml(studentId, student) {
-    const lastCheckIn = student.lastCheckIn ? new Date(student.lastCheckIn).toLocaleString() : 'N/A';
-    const lastCheckOut = student.lastCheckOut ? new Date(student.lastCheckOut).toLocaleString() : 'N/A';
-    const lastSunscreen = student.lastSunscreen ? new Date(student.lastSunscreen).toLocaleString() : 'N/A';
-
-    const studentItemDiv = document.createElement('div');
-    studentItemDiv.className = 'student-item';
-    studentItemDiv.setAttribute('data-id', studentId);
-
-    studentItemDiv.innerHTML = `
-        <h3>${student.name}</h3>
-        <div class="status-info">
-            <p>Last Check In: <strong id="${studentId}-lastCheckIn">${lastCheckIn}</strong></p>
-            <p>Last Check Out: <strong id="${studentId}-lastCheckOut">${lastCheckOut}</strong></p>
-            <p>Last Sunscreen: <strong id="${studentId}-lastSunscreen">${lastSunscreen}</strong></p>
-        </div>
-        <div class="buttons">
-            <button class="check-in-btn" data-id="${studentId}">Check In</button>
-            <button class="check-out-btn" data-id="${studentId}">Check Out</button>
-            <button class="sunscreen-btn" data-id="${studentId}">Sunscreen</button>
-        </div>
-    `;
-    return studentItemDiv;
-}
-
-
-// =======================================================
-// STEP 4: Realtime Data Loading and Display (Main Logic - NO DAYS FILTERING)
-// This function runs every time the 'students' data changes in Firebase.
-// It now displays ALL students.
+// STEP 3: Realtime Data Loading and Display & Status Bar Updates
+// This function runs every time the 'students' data changes in Firebase
 // =======================================================
 studentsRef.on('value', (snapshot) => {
-    const allStudentsData = snapshot.val(); // Get ALL students data from Firebase
+    const studentsData = snapshot.val(); // Get all students data as an object
 
-    // Clear any previously rendered students from the HTML display
-    studentListContainer.innerHTML = '';
-
-    // Initialize counts for the status bar
-    let totalStudentsDisplayed = 0;
+    let totalStudents = 0;
     let presentStudents = 0;
     let absentStudents = 0;
 
-    if (allStudentsData) {
-        // Iterate through each student in the data received from Firebase
-        Object.entries(allStudentsData).forEach(([studentId, student]) => {
-            // *** Removed daysAvailable filtering logic ***
+    if (studentsData) {
+        Object.entries(studentsData).forEach(([studentId, student]) => {
+            totalStudents++; // Count total students
 
-            totalStudentsDisplayed++; // Increment count for EVERY student found
+            // Find the elements for this specific student in your HTML
+            const lastCheckInElement = document.getElementById(`${studentId}-lastCheckIn`);
+            const lastCheckOutElement = document.getElementById(`${studentId}-lastCheckOut`);
+            const lastSunscreenElement = document.getElementById(`${studentId}-lastSunscreen`);
 
-            // Create the HTML element for this student and add it to the page
-            const studentElement = createStudentHtml(studentId, student);
-            studentListContainer.appendChild(studentElement);
+            if (lastCheckInElement && lastCheckOutElement && lastSunscreenElement) {
+                const lastCheckIn = student.lastCheckIn ? new Date(student.lastCheckIn).toLocaleString() : 'N/A';
+                const lastCheckOut = student.lastCheckOut ? new Date(student.lastCheckOut).toLocaleString() : 'N/A';
+                const lastSunscreen = student.lastSunscreen ? new Date(student.lastSunscreen).toLocaleString() : 'N/A';
 
-            // Determine student status for the status bar
-            const checkInTime = student.lastCheckIn ? new Date(student.lastCheckIn).getTime() : 0;
-            const checkOutTime = student.lastCheckOut ? new Date(student.lastCheckOut).getTime() : 0;
+                lastCheckInElement.textContent = lastCheckIn;
+                lastCheckOutElement.textContent = lastCheckOut;
+                lastSunscreenElement.textContent = lastSunscreen;
 
-            if (checkInTime > 0 && (checkOutTime === 0 || checkInTime > checkOutTime)) {
-                presentStudents++;
+                // Determine student status for status bar (NEW LOGIC)
+                const checkInTime = student.lastCheckIn ? new Date(student.lastCheckIn).getTime() : 0;
+                const checkOutTime = student.lastCheckOut ? new Date(student.lastCheckOut).getTime() : 0;
+
+                // A student is considered 'Present' if they have checked in AND
+                // their last check-in is more recent than their last check-out.
+                // If they've only checked in, they're also present.
+                if (checkInTime > 0 && (checkOutTime === 0 || checkInTime > checkOutTime)) {
+                    presentStudents++;
+                } else {
+                    absentStudents++;
+                }
+
             } else {
-                absentStudents++;
+                console.warn(`HTML elements for student ID "${studentId}" not found. Make sure data-id matches and IDs are correctly formatted in index.html.`);
             }
         });
+    } else {
+        console.log("No student data in Firebase yet.");
+        document.querySelectorAll('.status-info strong').forEach(el => el.textContent = 'N/A');
     }
 
-    // Update the text content of the status bar elements
-    totalStudentsCount.textContent = totalStudentsDisplayed;
+    // Update the status bar counts (NEW)
+    totalStudentsCount.textContent = totalStudents;
     studentsPresentCount.textContent = presentStudents;
     studentsAbsentCount.textContent = absentStudents;
-
-    // Show/hide the "No students found" message
-    if (totalStudentsDisplayed === 0) {
-        noStudentsMessage.style.display = 'block'; // Make the message visible
-    } else {
-        noStudentsMessage.style.display = 'none'; // Hide the message
-        // IMPORTANT: Re-attach event listeners to buttons after they are dynamically added to the page
-        attachButtonListeners();
-    }
 });
 
 
 // =======================================================
-// STEP 5: Function to Attach Event Listeners to ALL Student Buttons
-// This function must be called AFTER students are rendered in the HTML
+// STEP 4: Attach Event Listeners to Buttons
 // =======================================================
-function attachButtonListeners() {
+document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.check-in-btn').forEach(button => {
-        button.onclick = null;
-        button.onclick = () => checkIn(button.dataset.id);
+        button.addEventListener('click', () => checkIn(button.dataset.id));
     });
 
     document.querySelectorAll('.check-out-btn').forEach(button => {
-        button.onclick = null;
-        button.onclick = () => checkOut(button.dataset.id);
+        button.addEventListener('click', () => checkOut(button.dataset.id));
     });
 
     document.querySelectorAll('.sunscreen-btn').forEach(button => {
-        button.onclick = null;
-        button.onclick = () => checkSunscreen(button.dataset.id);
+        button.addEventListener('click', () => checkSunscreen(button.dataset.id));
     });
-}
 
-
-// =======================================================
-// STEP 6: Initial Global Button Event Listeners (PDF, Reset)
-// These listeners attach once on page load
-// =======================================================
-document.addEventListener('DOMContentLoaded', () => {
     savePdfButton.addEventListener('click', saveAsPdf);
     resetAllButton.addEventListener('click', resetAllData);
-    // TEMPORARY BUTTON LISTENER REMOVED: createStudentsNodeButton.addEventListener('click', createStudentsRootNode);
 });
 
 
 // =======================================================
-// STEP 7: Core Check-in / Check-out / Sunscreen Functions
+// STEP 5: Core Check-in / Check-out / Sunscreen Functions
 // =======================================================
 
 async function checkIn(studentId) {
@@ -193,7 +152,7 @@ async function checkSunscreen(studentId) {
 
 
 // =======================================================
-// STEP 8: Save as PDF Function
+// STEP 6: Save as PDF Function
 // =======================================================
 async function saveAsPdf() {
     const element = document.getElementById('student-list');
@@ -205,13 +164,13 @@ async function saveAsPdf() {
         return;
     }
 
+    // Temporarily hide the buttons for a cleaner PDF capture
     const buttons = document.querySelectorAll('.student-item .buttons');
     buttons.forEach(btnContainer => btnContainer.style.display = 'none');
 
     try {
         const canvas = await html2canvas(element, { scale: 2 });
         const imgData = canvas.toDataURL('image/png');
-
         const { jsPDF } = window.jspdf;
 
         const pdf = new jsPDF('p', 'mm', 'a4');
@@ -238,13 +197,14 @@ async function saveAsPdf() {
         console.error("Error generating PDF:", error);
         alert("Failed to generate PDF. Please check the console for details.");
     } finally {
+        // Show buttons again
         buttons.forEach(btnContainer => btnContainer.style.display = 'flex');
     }
 }
 
 
 // =======================================================
-// STEP 9: Reset All Data Function
+// STEP 7: Reset All Data Function
 // =======================================================
 async function resetAllData() {
     if (!confirm("Are you sure you want to RESET ALL ATTENDANCE DATA? This action cannot be undone.")) {
