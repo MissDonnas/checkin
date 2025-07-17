@@ -9,10 +9,25 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 </head>
 <body>
     <div class="container">
         <h1>Student Attendance</h1>
+
+        <div id="status-bar" class="status-bar">
+            <span>Total: <strong id="totalStudentsCount">0</strong></span>
+            <span>Present: <strong id="studentsPresentCount">0</strong></span>
+            <span>Absent: <strong id="studentsAbsentCount">0</strong></span>
+        </div>
+
+        <div class="top-buttons">
+            <button id="savePdfButton" class="action-btn save-pdf-btn">Save as PDF</button>
+            <button id="resetAllButton" class="action-btn reset-btn">Reset All Data</button>
+        </div>
+
 
         <div id="student-list" class="student-list">
             <div class="student-item" data-id="alice-smith">
@@ -20,10 +35,12 @@
                 <div class="status-info">
                     <p>Last Check In: <strong id="alice-smith-lastCheckIn">N/A</strong></p>
                     <p>Last Check Out: <strong id="alice-smith-lastCheckOut">N/A</strong></p>
+                    <p>Last Sunscreen: <strong id="alice-smith-lastSunscreen">N/A</strong></p>
                 </div>
                 <div class="buttons">
                     <button class="check-in-btn" data-id="alice-smith">Check In</button>
                     <button class="check-out-btn" data-id="alice-smith">Check Out</button>
+                    <button class="sunscreen-btn" data-id="alice-smith">Sunscreen</button>
                 </div>
             </div>
 
@@ -32,10 +49,12 @@
                 <div class="status-info">
                     <p>Last Check In: <strong id="bob-johnson-lastCheckIn">N/A</strong></p>
                     <p>Last Check Out: <strong id="bob-johnson-lastCheckOut">N/A</strong></p>
+                    <p>Last Sunscreen: <strong id="bob-johnson-lastSunscreen">N/A</strong></p>
                 </div>
                 <div class="buttons">
                     <button class="check-in-btn" data-id="bob-johnson">Check In</button>
                     <button class="check-out-btn" data-id="bob-johnson">Check Out</button>
+                    <button class="sunscreen-btn" data-id="bob-johnson">Sunscreen</button>
                 </div>
             </div>
 
@@ -44,10 +63,12 @@
                 <div class="status-info">
                     <p>Last Check In: <strong id="charlie-brown-lastCheckIn">N/A</strong></p>
                     <p>Last Check Out: <strong id="charlie-brown-lastCheckOut">N/A</strong></p>
+                    <p>Last Sunscreen: <strong id="charlie-brown-lastSunscreen">N/A</strong></p>
                 </div>
                 <div class="buttons">
                     <button class="check-in-btn" data-id="charlie-brown">Check In</button>
                     <button class="check-out-btn" data-id="charlie-brown">Check Out</button>
+                    <button class="sunscreen-btn" data-id="charlie-brown">Sunscreen</button>
                 </div>
             </div>
 
