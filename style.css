@@ -26,67 +26,7 @@ h1 {
     margin-bottom: 30px;
 }
 
-.add-student-btn {
-    display: block;
-    width: 100%;
-    padding: 12px 20px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    margin-bottom: 20px;
-    transition: background-color 0.3s ease;
-}
-
-.add-student-btn:hover {
-    background-color: #218838;
-}
-
-#addStudentForm {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-#addStudentForm.hidden {
-    display: none;
-}
-
-#addStudentForm input[type="text"] {
-    flex-grow: 1;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-}
-
-#addStudentForm button {
-    padding: 10px 15px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-#submitNewStudent {
-    background-color: #007bff;
-    color: white;
-}
-
-#submitNewStudent:hover {
-    background-color: #0056b3;
-}
-
-#cancelAddStudent {
-    background-color: #dc3545;
-    color: white;
-}
-
-#cancelAddStudent:hover {
-    background-color: #c82333;
-}
-
+/* Removed add-student-btn and addStudentForm styles as they are no longer needed in HTML */
 
 .student-item {
     background-color: #f9f9f9;
@@ -125,30 +65,22 @@ h1 {
     transition: background-color 0.3s ease;
 }
 
-.student-item button.check-in {
+.student-item button.check-in-btn { /* Changed class name for clarity */
     background-color: #007bff;
     color: white;
 }
 
-.student-item button.check-in:hover {
+.student-item button.check-in-btn:hover {
     background-color: #0056b3;
 }
 
-.student-item button.check-out {
+.student-item button.check-out-btn { /* Changed class name for clarity */
     background-color: #6c757d;
     color: white;
 }
 
-.student-item button.check-out:hover {
+.student-item button.check-out-btn:hover {
     background-color: #5a6268;
 }
 
-.student-item button.delete-student {
-    background-color: #dc3545;
-    color: white;
-    margin-left: auto; /* Push delete button to the right */
-}
-
-.student-item button.delete-student:hover {
-    background-color: #c82333;
-}
+/* Removed delete-student styles as it's no longer needed in HTML */
