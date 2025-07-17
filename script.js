@@ -163,6 +163,8 @@ function attachButtonListeners() {
 document.addEventListener('DOMContentLoaded', () => {
     savePdfButton.addEventListener('click', saveAsPdf);
     resetAllButton.addEventListener('click', resetAllData);
+  const createStudentsNodeButton = document.getElementById('createStudentsNodeButton');
+createStudentsNodeButton.addEventListener('click', createStudentsRootNode);
 });
 
 
@@ -315,5 +317,24 @@ async function resetAllData() {
     } catch (error) {
         console.error("Error resetting all data:", error);
         alert("Failed to reset data. Please check console for details.");
+    }
+}
+// =======================================================
+// TEMPORARY: Function to Create the initial 'students' node
+// This function should be REMOVED after successful use.
+// =======================================================
+async function createStudentsRootNode() {
+    if (!confirm("This will create an empty 'students' node in your database. Only do this once if it's missing.")) {
+        return;
+    }
+    try {
+        await database.ref('students').set({}); // Set 'students' to an empty object
+        console.log("Empty 'students' node created successfully.");
+        alert("Empty 'students' node created successfully in Firebase! You can now remove the 'Create Students Node' button and function.");
+        // Optionally, hide the button after successful creation
+        document.getElementById('createStudentsNodeButton').style.display = 'none';
+    } catch (error) {
+        console.error("Error creating students root node:", error);
+        alert("Failed to create 'students' node. Check console for details.");
     }
 }
