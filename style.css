@@ -1,0 +1,154 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Align to top for longer content */
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+.container {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 600px;
+    box-sizing: border-box;
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+}
+
+.add-student-btn {
+    display: block;
+    width: 100%;
+    padding: 12px 20px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-bottom: 20px;
+    transition: background-color 0.3s ease;
+}
+
+.add-student-btn:hover {
+    background-color: #218838;
+}
+
+#addStudentForm {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+#addStudentForm.hidden {
+    display: none;
+}
+
+#addStudentForm input[type="text"] {
+    flex-grow: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+#addStudentForm button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#submitNewStudent {
+    background-color: #007bff;
+    color: white;
+}
+
+#submitNewStudent:hover {
+    background-color: #0056b3;
+}
+
+#cancelAddStudent {
+    background-color: #dc3545;
+    color: white;
+}
+
+#cancelAddStudent:hover {
+    background-color: #c82333;
+}
+
+
+.student-item {
+    background-color: #f9f9f9;
+    border: 1px solid #eee;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column; /* Stack name and buttons */
+    gap: 10px; /* Space between elements */
+}
+
+.student-item h3 {
+    margin-top: 0;
+    margin-bottom: 5px;
+    color: #0056b3;
+}
+
+.student-item .status-info {
+    font-size: 0.9em;
+    color: #555;
+    margin-bottom: 10px;
+}
+
+.student-item .buttons {
+    display: flex;
+    gap: 10px; /* Space between buttons */
+}
+
+.student-item button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.student-item button.check-in {
+    background-color: #007bff;
+    color: white;
+}
+
+.student-item button.check-in:hover {
+    background-color: #0056b3;
+}
+
+.student-item button.check-out {
+    background-color: #6c757d;
+    color: white;
+}
+
+.student-item button.check-out:hover {
+    background-color: #5a6268;
+}
+
+.student-item button.delete-student {
+    background-color: #dc3545;
+    color: white;
+    margin-left: auto; /* Push delete button to the right */
+}
+
+.student-item button.delete-student:hover {
+    background-color: #c82333;
+}
