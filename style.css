@@ -23,33 +23,34 @@ body {
 h1 {
     text-align: center;
     color: #333;
-    margin-bottom: 20px;
+    margin-bottom: 20px; /* Reduced margin to make space for status bar */
 }
 
-/* Status Bar Styles */
+/* NEW: Status Bar Styles */
 .status-bar {
     display: flex;
     justify-content: space-around;
     align-items: center;
-    background-color: #e9ecef;
+    background-color: #e9ecef; /* Light gray background */
     padding: 10px 15px;
     border-radius: 5px;
-    margin-bottom: 20px;
+    margin-bottom: 20px; /* Space below status bar */
     font-size: 0.95em;
     color: #333;
     border: 1px solid #dee2e6;
 }
 
 .status-bar span {
-    flex: 1;
+    flex: 1; /* Distribute space evenly */
     text-align: center;
     padding: 0 5px;
 }
 
 .status-bar strong {
     font-size: 1.1em;
-    color: #007bff;
+    color: #007bff; /* Blue for emphasis */
 }
+
 
 .top-buttons {
     display: flex;
@@ -85,6 +86,7 @@ h1 {
 .reset-btn:hover {
     background-color: #c82333;
 }
+
 
 .student-item {
     background-color: #f9f9f9;
@@ -149,15 +151,4 @@ h1 {
 
 .student-item button.sunscreen-btn:hover {
     background-color: #e0a800;
-}
-
-/* Styles for the "No students" message */
-.hidden-message {
-    text-align: center;
-    color: #666;
-    font-style: italic;
-    padding: 20px;
-    border: 1px dashed #ccc;
-    border-radius: 5px;
-    margin-top: 20px;
 }
