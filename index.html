@@ -6,10 +6,14 @@
     <title>Student Check-in/Check-out</title>
     <link rel="stylesheet" href="style.css">
 
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
+    <!-- PDF Generation Libraries -->
+    <!-- html2canvas: Captures HTML as an image -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- jsPDF: Creates PDF documents -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 </head>
@@ -28,7 +32,43 @@
             <button id="resetAllButton" class="action-btn reset-btn">Reset All Data</button>
         </div>
 
-         <div class="student-item" data-id="magnolia-beiluss">
+        <!-- NEW: Search Bar -->
+        <div class="search-container">
+            <input type="text" id="studentSearch" placeholder="Search by name..." class="search-input">
+        </div>
+
+        <div id="student-list" class="student-list">
+            <!-- Student Cards - Pre-defined in HTML and updated by script.js -->
+
+            <div class="student-item" data-id="grayson-baroli">
+                <h3>Grayson Baroli</h3>
+                <div class="status-info">
+                    <p>Last Check In: <strong id="grayson-baroli-lastCheckIn">N/A</strong></p>
+                    <p>Last Check Out: <strong id="grayson-baroli-lastCheckOut">N/A</strong></p>
+                    <p>Last Sunscreen: <strong id="grayson-baroli-lastSunscreen">N/A</strong></p>
+                </div>
+                <div class="buttons">
+                    <button class="check-in-btn" data-id="grayson-baroli">Check In</button>
+                    <button class="check-out-btn" data-id="grayson-baroli">Check Out</button>
+                    <button class="sunscreen-btn" data-id="grayson-baroli">Sunscreen</button>
+                </div>
+            </div>
+
+            <div class="student-item" data-id="oaklyn-baroli">
+                <h3>Oaklyn Baroli</h3>
+                <div class="status-info">
+                    <p>Last Check In: <strong id="oaklyn-baroli-lastCheckIn">N/A</strong></p>
+                    <p>Last Check Out: <strong id="oaklyn-baroli-lastCheckOut">N/A</strong></p>
+                    <p>Last Sunscreen: <strong id="oaklyn-baroli-lastSunscreen">N/A</strong></p>
+                </div>
+                <div class="buttons">
+                    <button class="check-in-btn" data-id="oaklyn-baroli">Check In</button>
+                    <button class="check-out-btn" data-id="oaklyn-baroli">Check Out</button>
+                    <button class="sunscreen-btn" data-id="oaklyn-baroli">Sunscreen</button>
+                </div>
+            </div>
+
+            <div class="student-item" data-id="magnolia-beiluss">
                 <h3>Magnolia Beiluss</h3>
                 <div class="status-info">
                     <p>Last Check In: <strong id="magnolia-beiluss-lastCheckIn">N/A</strong></p>
@@ -252,6 +292,76 @@
                 </div>
             </div>
 
+            <div class="student-item" data-id="ben-kiseda">
+                <h3>Ben Kiseda</h3>
+                <div class="status-info">
+                    <p>Last Check In: <strong id="ben-kiseda-lastCheckIn">N/A</strong></p>
+                    <p>Last Check Out: <strong id="ben-kiseda-lastCheckOut">N/A</strong></p>
+                    <p>Last Sunscreen: <strong id="ben-kiseda-lastSunscreen">N/A</strong></p>
+                </div>
+                <div class="buttons">
+                    <button class="check-in-btn" data-id="ben-kiseda">Check In</button>
+                    <button class="check-out-btn" data-id="ben-kiseda">Check Out</button>
+                    <button class="sunscreen-btn" data-id="ben-kiseda">Sunscreen</button>
+                </div>
+            </div>
+
+            <div class="student-item" data-id="henry-kiseda">
+                <h3>Henry Kiseda</h3>
+                <div class="status-info">
+                    <p>Last Check In: <strong id="henry-kiseda-lastCheckIn">N/A</strong></p>
+                    <p>Last Check Out: <strong id="henry-kiseda-lastCheckOut">N/A</strong></p>
+                    <p>Last Sunscreen: <strong id="henry-kiseda-lastSunscreen">N/A</strong></p>
+                </div>
+                <div class="buttons">
+                    <button class="check-in-btn" data-id="henry-kiseda">Check In</button>
+                    <button class="check-out-btn" data-id="henry-kiseda">Check Out</button>
+                    <button class="sunscreen-btn" data-id="henry-kiseda">Sunscreen</button>
+                </div>
+            </div>
+
+            <div class="student-item" data-id="james-kokoszka">
+                <h3>James Kokoszka</h3>
+                <div class="status-info">
+                    <p>Last Check In: <strong id="james-kokoszka-lastCheckIn">N/A</strong></p>
+                    <p>Last Check Out: <strong id="james-kokoszka-lastCheckOut">N/A</strong></p>
+                    <p>Last Sunscreen: <strong id="james-kokoszka-lastSunscreen">N/A</strong></p>
+                </div>
+                <div class="buttons">
+                    <button class="check-in-btn" data-id="james-kokoszka">Check In</button>
+                    <button class="check-out-btn" data-id="james-kokoszka">Check Out</button>
+                    <button class="sunscreen-btn" data-id="james-kokoszka">Sunscreen</button>
+                </div>
+            </div>
+
+            <div class="student-item" data-id="ryan-kokoszka">
+                <h3>Ryan Kokoszka</h3>
+                <div class="status-info">
+                    <p>Last Check In: <strong id="ryan-kokoszka-lastCheckIn">N/A</strong></p>
+                    <p>Last Check Out: <strong id="ryan-kokoszka-lastCheckOut">N/A</strong></p>
+                    <p>Last Sunscreen: <strong id="ryan-kokoszka-lastSunscreen">N/A</strong></p>
+                </div>
+                <div class="buttons">
+                    <button class="check-in-btn" data-id="ryan-kokoszka">Check In</button>
+                    <button class="check-out-btn" data-id="ryan-kokoszka">Check Out</button>
+                    <button class="sunscreen-btn" data-id="ryan-kokoszka">Sunscreen</button>
+                </div>
+            </div>
+
+            <div class="student-item" data-id="lenny-kroning">
+                <h3>Lenny Kroning</h3>
+                <div class="status-info">
+                    <p>Last Check In: <strong id="lenny-kroning-lastCheckIn">N/A</strong></p>
+                    <p>Last Check Out: <strong id="lenny-kroning-lastCheckOut">N/A</strong></p>
+                    <p>Last Sunscreen: <strong id="lenny-kroning-lastSunscreen">N/A</strong></p>
+                </div>
+                <div class="buttons">
+                    <button class="check-in-btn" data-id="lenny-kroning">Check In</button>
+                    <button class="check-out-btn" data-id="lenny-kroning">Check Out</button>
+                    <button class="sunscreen-btn" data-id="lenny-kroning">Sunscreen</button>
+                </div>
+            </div>
+
             <div class="student-item" data-id="neera-medesani">
                 <h3>Neera Medesani</h3>
                 <div class="status-info">
@@ -294,6 +404,34 @@
                 </div>
             </div>
 
+            <div class="student-item" data-id="luciana-lajcaj">
+                <h3>Luciana Lajcaj</h3>
+                <div class="status-info">
+                    <p>Last Check In: <strong id="luciana-lajcaj-lastCheckIn">N/A</strong></p>
+                    <p>Last Check Out: <strong id="luciana-lajcaj-lastCheckOut">N/A</strong></p>
+                    <p>Last Sunscreen: <strong id="luciana-lajcaj-lastSunscreen">N/A</strong></p>
+                </div>
+                <div class="buttons">
+                    <button class="check-in-btn" data-id="luciana-lajcaj">Check In</button>
+                    <button class="check-out-btn" data-id="luciana-lajcaj">Check Out</button>
+                    <button class="sunscreen-btn" data-id="luciana-lajcaj">Sunscreen</button>
+                </div>
+            </div>
+
+            <div class="student-item" data-id="marcella-lajcaj">
+                <h3>Marcella Lajcaj</h3>
+                <div class="status-info">
+                    <p>Last Check In: <strong id="marcella-lajcaj-lastCheckIn">N/A</strong></p>
+                    <p>Last Check Out: <strong id="marcella-lajcaj-lastCheckOut">N/A</strong></p>
+                    <p>Last Sunscreen: <strong id="marcella-lajcaj-lastSunscreen">N/A</strong></p>
+                </div>
+                <div class="buttons">
+                    <button class="check-in-btn" data-id="marcella-lajcaj">Check In</button>
+                    <button class="check-out-btn" data-id="marcella-lajcaj">Check Out</button>
+                    <button class="sunscreen-btn" data-id="marcella-lajcaj">Sunscreen</button>
+                </div>
+            </div>
+
             <div class="student-item" data-id="david-micoff">
                 <h3>David Micoff</h3>
                 <div class="status-info">
@@ -305,6 +443,20 @@
                     <button class="check-in-btn" data-id="david-micoff">Check In</button>
                     <button class="check-out-btn" data-id="david-micoff">Check Out</button>
                     <button class="sunscreen-btn" data-id="david-micoff">Sunscreen</button>
+                </div>
+            </div>
+
+            <div class="student-item" data-id="veda-moon">
+                <h3>Veda Moon</h3>
+                <div class="status-info">
+                    <p>Last Check In: <strong id="veda-moon-lastCheckIn">N/A</strong></p>
+                    <p>Last Check Out: <strong id="veda-moon-lastCheckOut">N/A</strong></p>
+                    <p>Last Sunscreen: <strong id="veda-moon-lastSunscreen">N/A</strong></p>
+                </div>
+                <div class="buttons">
+                    <button class="check-in-btn" data-id="veda-moon">Check In</button>
+                    <button class="check-out-btn" data-id="veda-moon">Check Out</button>
+                    <button class="sunscreen-btn" data-id="veda-moon">Sunscreen</button>
                 </div>
             </div>
 
@@ -389,6 +541,48 @@
                     <button class="check-in-btn" data-id="maisha-sanjay">Check In</button>
                     <button class="check-out-btn" data-id="maisha-sanjay">Check Out</button>
                     <button class="sunscreen-btn" data-id="maisha-sanjay">Sunscreen</button>
+                </div>
+            </div>
+
+            <div class="student-item" data-id="logan-shin">
+                <h3>Logan Shin</h3>
+                <div class="status-info">
+                    <p>Last Check In: <strong id="logan-shin-lastCheckIn">N/A</strong></p>
+                    <p>Last Check Out: <strong id="logan-shin-lastCheckOut">N/A</strong></p>
+                    <p>Last Sunscreen: <strong id="logan-shin-lastSunscreen">N/A</strong></p>
+                </div>
+                <div class="buttons">
+                    <button class="check-in-btn" data-id="logan-shin">Check In</button>
+                    <button class="check-out-btn" data-id="logan-shin">Check Out</button>
+                    <button class="sunscreen-btn" data-id="logan-shin">Sunscreen</button>
+                </div>
+            </div>
+
+            <div class="student-item" data-id="loryn-shin">
+                <h3>Loryn Shin</h3>
+                <div class="status-info">
+                    <p>Last Check In: <strong id="loryn-shin-lastCheckIn">N/A</strong></p>
+                    <p>Last Check Out: <strong id="loryn-shin-lastCheckOut">N/A</strong></p>
+                    <p>Last Sunscreen: <strong id="loryn-shin-lastSunscreen">N/A</strong></p>
+                </div>
+                <div class="buttons">
+                    <button class="check-in-btn" data-id="loryn-shin">Check In</button>
+                    <button class="check-out-btn" data-id="loryn-shin">Check Out</button>
+                    <button class="sunscreen-btn" data-id="loryn-shin">Sunscreen</button>
+                </div>
+            </div>
+
+            <div class="student-item" data-id="mason-sidor">
+                <h3>Mason Sidor</h3>
+                <div class="status-info">
+                    <p>Last Check In: <strong id="mason-sidor-lastCheckIn">N/A</strong></p>
+                    <p>Last Check Out: <strong id="mason-sidor-lastCheckOut">N/A</strong></p>
+                    <p>Last Sunscreen: <strong id="mason-sidor-lastSunscreen">N/A</strong></p>
+                </div>
+                <div class="buttons">
+                    <button class="check-in-btn" data-id="mason-sidor">Check In</button>
+                    <button class="check-out-btn" data-id="mason-sidor">Check Out</button>
+                    <button class="sunscreen-btn" data-id="mason-sidor">Sunscreen</button>
                 </div>
             </div>
 
