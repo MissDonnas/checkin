@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Check-in/Check-out</title>
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+
+</head>
+<body>
+    <div class="container">
+        <h1>Student Attendance</h1>
+
+        <button id="addStudentButton" class="add-student-btn">Add New Student</button>
+        <div id="addStudentForm" class="hidden">
+            <input type="text" id="newStudentName" placeholder="Enter student name">
+            <button id="submitNewStudent">Save Student</button>
+            <button id="cancelAddStudent">Cancel</button>
+        </div>
+
+        <div id="student-list" class="student-list">
+            <p>Loading students...</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
