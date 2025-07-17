@@ -11,6 +11,8 @@ const firebaseConfig = {
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
+const database = firebase.database(); // Should be firebase.database()
+const studentsRef = database.ref('students');
 // =======================================================
 // STEP 2: Realtime Data Loading and Display (Updates existing elements)
 // This function runs every time the 'students' data changes in Firebase
