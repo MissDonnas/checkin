@@ -14,68 +14,106 @@ firebase.initializeApp(firebaseConfig);
 const database = firebase.database(); // Should be firebase.database()
 const studentsRef = database.ref('students');
 // =======================================================
-// STEP 2: Realtime Data Loading and Display (Updates existing elements)
+// STEP 2: DOM Element References for new buttons and status bar
+// =======================================================
+const savePdfButton = document.getElementById('savePdfButton');
+const resetAllButton = document.getElementById('resetAllButton');
+
+// NEW: Status Bar Elements
+const totalStudentsCount = document.getElementById('totalStudentsCount');
+const studentsPresentCount = document.getElementById('studentsPresentCount');
+const studentsAbsentCount = document.getElementById('studentsAbsentCount');
+
+
+// =======================================================
+// STEP 3: Realtime Data Loading and Display & Status Bar Updates
 // This function runs every time the 'students' data changes in Firebase
 // =======================================================
 studentsRef.on('value', (snapshot) => {
     const studentsData = snapshot.val(); // Get all students data as an object
 
+    let totalStudents = 0;
+    let presentStudents = 0;
+    let absentStudents = 0;
+
     if (studentsData) {
-        // Iterate through each student in the data received from Firebase
         Object.entries(studentsData).forEach(([studentId, student]) => {
+            totalStudents++; // Count total students
+
             // Find the elements for this specific student in your HTML
             const lastCheckInElement = document.getElementById(`${studentId}-lastCheckIn`);
             const lastCheckOutElement = document.getElementById(`${studentId}-lastCheckOut`);
+            const lastSunscreenElement = document.getElementById(`${studentId}-lastSunscreen`);
 
-            if (lastCheckInElement && lastCheckOutElement) { // Ensure elements exist before updating
+            if (lastCheckInElement && lastCheckOutElement && lastSunscreenElement) {
                 const lastCheckIn = student.lastCheckIn ? new Date(student.lastCheckIn).toLocaleString() : 'N/A';
                 const lastCheckOut = student.lastCheckOut ? new Date(student.lastCheckOut).toLocaleString() : 'N/A';
+                const lastSunscreen = student.lastSunscreen ? new Date(student.lastSunscreen).toLocaleString() : 'N/A';
 
                 lastCheckInElement.textContent = lastCheckIn;
                 lastCheckOutElement.textContent = lastCheckOut;
+                lastSunscreenElement.textContent = lastSunscreen;
+
+                // Determine student status for status bar (NEW LOGIC)
+                const checkInTime = student.lastCheckIn ? new Date(student.lastCheckIn).getTime() : 0;
+                const checkOutTime = student.lastCheckOut ? new Date(student.lastCheckOut).getTime() : 0;
+
+                // A student is considered 'Present' if they have checked in AND
+                // their last check-in is more recent than their last check-out.
+                // If they've only checked in, they're also present.
+                if (checkInTime > 0 && (checkOutTime === 0 || checkInTime > checkOutTime)) {
+                    presentStudents++;
+                } else {
+                    absentStudents++;
+                }
+
             } else {
                 console.warn(`HTML elements for student ID "${studentId}" not found. Make sure data-id matches and IDs are correctly formatted in index.html.`);
             }
         });
     } else {
         console.log("No student data in Firebase yet.");
-        // Optionally, reset all displayed times to N/A if database is empty
         document.querySelectorAll('.status-info strong').forEach(el => el.textContent = 'N/A');
     }
+
+    // Update the status bar counts (NEW)
+    totalStudentsCount.textContent = totalStudents;
+    studentsPresentCount.textContent = presentStudents;
+    studentsAbsentCount.textContent = absentStudents;
 });
 
 
 // =======================================================
-// STEP 3: Attach Event Listeners to Buttons
-// This runs once when the page loads to attach listeners to all check-in/out buttons
+// STEP 4: Attach Event Listeners to Buttons
 // =======================================================
 document.addEventListener('DOMContentLoaded', () => {
-    // Attach check-in listeners
     document.querySelectorAll('.check-in-btn').forEach(button => {
         button.addEventListener('click', () => checkIn(button.dataset.id));
     });
 
-    // Attach check-out listeners
     document.querySelectorAll('.check-out-btn').forEach(button => {
         button.addEventListener('click', () => checkOut(button.dataset.id));
     });
+
+    document.querySelectorAll('.sunscreen-btn').forEach(button => {
+        button.addEventListener('click', () => checkSunscreen(button.dataset.id));
+    });
+
+    savePdfButton.addEventListener('click', saveAsPdf);
+    resetAllButton.addEventListener('click', resetAllData);
 });
 
 
 // =======================================================
-// STEP 4: Core Check-in / Check-out Functions
+// STEP 5: Core Check-in / Check-out / Sunscreen Functions
 // =======================================================
 
 async function checkIn(studentId) {
-    const timestamp = new Date().toISOString(); // ISO string format (e.g., "2025-07-16T22:05:00.000Z")
-    const studentRef = studentsRef.child(studentId); // Reference to specific student's data
+    const timestamp = new Date().toISOString();
+    const studentRef = studentsRef.child(studentId);
 
     try {
-        // Update lastCheckIn property directly on the student object
         await studentRef.child('lastCheckIn').set(timestamp);
-
-        // Add to a list of all check-ins for this student (under 'checkIns' node)
-        // 'push()' generates a unique key for each new entry to prevent overwrites
         await studentRef.child('checkIns').push(timestamp);
         console.log(`Checked in student ${studentId} at ${timestamp}`);
     } catch (error) {
@@ -89,14 +127,118 @@ async function checkOut(studentId) {
     const studentRef = studentsRef.child(studentId);
 
     try {
-        // Update lastCheckOut property directly on the student object
         await studentRef.child('lastCheckOut').set(timestamp);
-
-        // Add to a list of all check-outs for this student (under 'checkOuts' node)
         await studentRef.child('checkOuts').push(timestamp);
         console.log(`Checked out student ${studentId} at ${timestamp}`);
     } catch (error) {
         console.error("Error checking out:", error);
         alert("Failed to check out. Please try again.");
+    }
+}
+
+async function checkSunscreen(studentId) {
+    const timestamp = new Date().toISOString();
+    const studentRef = studentsRef.child(studentId);
+
+    try {
+        await studentRef.child('lastSunscreen').set(timestamp);
+        await studentRef.child('sunscreenApplications').push(timestamp);
+        console.log(`Sunscreen applied for ${studentId} at ${timestamp}`);
+    } catch (error) {
+        console.error("Error applying sunscreen:", error);
+        alert("Failed to record sunscreen. Please try again.");
+    }
+}
+
+
+// =======================================================
+// STEP 6: Save as PDF Function
+// =======================================================
+async function saveAsPdf() {
+    const element = document.getElementById('student-list');
+    const filename = `Student_Attendance_${new Date().toLocaleDateString()}.pdf`;
+
+    if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
+        console.error("jsPDF library not loaded. Check script tag for jspdf.umd.min.js.");
+        alert("PDF generation failed: Library not loaded. Check browser console.");
+        return;
+    }
+
+    // Temporarily hide the buttons for a cleaner PDF capture
+    const buttons = document.querySelectorAll('.student-item .buttons');
+    buttons.forEach(btnContainer => btnContainer.style.display = 'none');
+
+    try {
+        const canvas = await html2canvas(element, { scale: 2 });
+        const imgData = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
+
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const imgWidth = 210;
+        const imgHeight = canvas.height * imgWidth / canvas.width;
+        let position = 0;
+
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+
+        let heightLeft = imgHeight - pdf.internal.pageSize.getHeight();
+        let pageHeight = pdf.internal.pageSize.getHeight();
+
+        while (heightLeft > 0) {
+            position = heightLeft - imgHeight;
+            pdf.addPage();
+            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+        }
+
+        pdf.save(filename);
+        console.log(`PDF saved: ${filename}`);
+
+    } catch (error) {
+        console.error("Error generating PDF:", error);
+        alert("Failed to generate PDF. Please check the console for details.");
+    } finally {
+        // Show buttons again
+        buttons.forEach(btnContainer => btnContainer.style.display = 'flex');
+    }
+}
+
+
+// =======================================================
+// STEP 7: Reset All Data Function
+// =======================================================
+async function resetAllData() {
+    if (!confirm("Are you sure you want to RESET ALL ATTENDANCE DATA? This action cannot be undone.")) {
+        return;
+    }
+
+    if (!confirm("Seriously? This will clear ALL check-in, check-out, and sunscreen times for ALL students. Confirm again.")) {
+        return;
+    }
+
+    try {
+        const snapshot = await studentsRef.once('value');
+        const studentsData = snapshot.val();
+
+        if (studentsData) {
+            const updates = {};
+            Object.keys(studentsData).forEach(studentId => {
+                updates[`${studentId}/lastCheckIn`] = null;
+                updates[`${studentId}/lastCheckOut`] = null;
+                updates[`${studentId}/lastSunscreen`] = null;
+                updates[`${studentId}/checkIns`] = {};
+                updates[`${studentId}/checkOuts`] = {};
+                updates[`${studentId}/sunscreenApplications`] = {};
+            });
+            await studentsRef.update(updates);
+            console.log("All attendance data has been reset.");
+            alert("All attendance data has been reset!");
+        } else {
+            console.log("No students found to reset data for.");
+            alert("No student data found to reset.");
+        }
+
+    } catch (error) {
+        console.error("Error resetting all data:", error);
+        alert("Failed to reset data. Please check console for details.");
     }
 }
