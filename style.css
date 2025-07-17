@@ -85,6 +85,27 @@ h1 {
     background-color: #c82333;
 }
 
+/* NEW: Search Bar Styles */
+.search-container {
+    margin-bottom: 20px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+
 .student-item {
     background-color: #f9f9f9;
     border: 1px solid #eee;
@@ -148,4 +169,16 @@ h1 {
 
 .student-item button.sunscreen-btn:hover {
     background-color: #e0a800;
+}
+
+/* Styles for the "No students" message - will be hidden by default */
+.hidden-message {
+    display: none; /* This message is not used in this version, but kept for consistency */
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 20px;
+    border: 1px dashed #ccc;
+    border-radius: 5px;
+    margin-top: 20px;
 }
