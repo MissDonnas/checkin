@@ -10,7 +10,7 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+firebase.initializeApp(firebaseConfig);
 // =======================================================
 // STEP 2: Realtime Data Loading and Display (Updates existing elements)
 // This function runs every time the 'students' data changes in Firebase
