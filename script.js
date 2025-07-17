@@ -1,10 +1,4 @@
 
-// Import the functions you need from the SDKs you need
-
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyBrK1aMhBv3SL-slt1ANo0XaYszc2fsPzQ",
   authDomain: "attendance-6abf9.firebaseapp.com",
@@ -15,14 +9,8 @@ const firebaseConfig = {
   appId: "1:557254925412:web:3c31d0a9e07a6477db5371"
 };
 
-
-
-// Get a reference to the Realtime Database service
-const database = firebase.database();
-// Get a reference to the 'students' node in your database
-const studentsRef = database.ref('students');
-
-
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
 // =======================================================
 // STEP 2: Realtime Data Loading and Display (Updates existing elements)
 // This function runs every time the 'students' data changes in Firebase
