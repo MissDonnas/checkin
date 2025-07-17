@@ -1,5 +1,5 @@
 const firebaseConfig = {
-  apiKey: "AIzaSyBrK1aMhBv3SL-slt1ANo0XaYszc2fsPzQ",
+  apiKey: "AIzaSyBrK1aMhBv3SL-slt1AN0XaYszc2fsPzQ",
   authDomain: "attendance-6abf9.firebaseapp.com",
   databaseURL: "https://attendance-6abf9-default-rtdb.firebaseio.com",
   projectId: "attendance-6abf9",
@@ -13,10 +13,12 @@ const database = firebase.database();
 const studentsRef = database.ref('students');
 
 // =======================================================
-// STEP 2: DOM Element References for new buttons and status bar
+// STEP 2: DOM Element References
 // =======================================================
 const savePdfButton = document.getElementById('savePdfButton');
 const resetAllButton = document.getElementById('resetAllButton');
+const studentListContainer = document.getElementById('student-list'); // The container for all student items
+const studentSearchInput = document.getElementById('studentSearch'); // The new search input
 
 // Status Bar Elements
 const totalStudentsCount = document.getElementById('totalStudentsCount');
@@ -25,79 +27,100 @@ const studentsAbsentCount = document.getElementById('studentsAbsentCount');
 
 
 // =======================================================
-// STEP 3: Realtime Data Loading and Display & Status Bar Updates
-// This function runs every time the 'students' data changes in Firebase
+// STEP 3: Realtime Data Loading and Display Logic
+// This function runs every time the 'students' data changes in Firebase.
+// It updates the pre-existing HTML elements.
 // =======================================================
 studentsRef.on('value', (snapshot) => {
-    const studentsData = snapshot.val(); // Get all students data as an object
+    const allStudentsData = snapshot.val(); // Get ALL students data from Firebase
 
-    let totalStudents = 0;
-    let presentStudents = 0;
-    let absentStudents = 0;
-
-    // Get all student item divs from the HTML
+    // Get all student item divs from the HTML (these are static now)
     const studentItemsInHtml = document.querySelectorAll('.student-item');
+
+    // Initialize counts for the status bar (these will be updated by applySearchFilter)
+    let visibleStudents = 0;
+    let visiblePresent = 0;
+    let visibleAbsent = 0;
 
     // Loop through each student item found in the HTML
     studentItemsInHtml.forEach(studentItemDiv => {
         const studentId = studentItemDiv.dataset.id; // Get the data-id from the HTML
-        const student = studentsData ? studentsData[studentId] : null; // Get corresponding data from Firebase
+        const student = allStudentsData ? allStudentsData[studentId] : null; // Get corresponding data from Firebase
 
-        // Only process if data exists for this student ID in Firebase
+        // Find the specific elements within this student's card
+        const lastCheckInElement = studentItemDiv.querySelector(`#${studentId}-lastCheckIn`);
+        const lastCheckOutElement = studentItemDiv.querySelector(`#${studentId}-lastCheckOut`);
+        const lastSunscreenElement = studentItemDiv.querySelector(`#${studentId}-lastSunscreen`);
+
         if (student) {
-            totalStudents++; // Count total students that have data in Firebase
-
-            // Find the elements for this specific student in your HTML
-            const lastCheckInElement = document.getElementById(`${studentId}-lastCheckIn`);
-            const lastCheckOutElement = document.getElementById(`${studentId}-lastCheckOut`);
-            const lastSunscreenElement = document.getElementById(`${studentId}-lastSunscreen`);
-
-            if (lastCheckInElement && lastCheckOutElement && lastSunscreenElement) {
-                const lastCheckIn = student.lastCheckIn ? new Date(student.lastCheckIn).toLocaleString() : 'N/A';
-                const lastCheckOut = student.lastCheckOut ? new Date(student.lastCheckOut).toLocaleString() : 'N/A';
-                const lastSunscreen = student.lastSunscreen ? new Date(student.lastSunscreen).toLocaleString() : 'N/A';
-
-                lastCheckInElement.textContent = lastCheckIn;
-                lastCheckOutElement.textContent = lastCheckOut;
-                lastSunscreenElement.textContent = lastSunscreen;
-
-                // Determine student status for status bar
-                const checkInTime = student.lastCheckIn ? new Date(student.lastCheckIn).getTime() : 0;
-                const checkOutTime = student.lastCheckOut ? new Date(student.lastCheckOut).getTime() : 0;
-
-                if (checkInTime > 0 && (checkOutTime === 0 || checkInTime > checkOutTime)) {
-                    presentStudents++;
-                } else {
-                    absentStudents++;
-                }
-            } else {
-                console.warn(`HTML elements for student ID "${studentId}" not found. Make sure data-id matches and IDs are correctly formatted in index.html.`);
-            }
+            // Update text content with Firebase data
+            lastCheckInElement.textContent = student.lastCheckIn ? new Date(student.lastCheckIn).toLocaleString() : 'N/A';
+            lastCheckOutElement.textContent = student.lastCheckOut ? new Date(student.lastCheckOut).toLocaleString() : 'N/A';
+            lastSunscreenElement.textContent = student.lastSunscreen ? new Date(student.lastSunscreen).toLocaleString() : 'N/A';
         } else {
-            // If a student exists in HTML but not in Firebase, set their status to N/A
-            const lastCheckInElement = document.getElementById(`${studentId}-lastCheckIn`);
-            const lastCheckOutElement = document.getElementById(`${studentId}-lastCheckOut`);
-            const lastSunscreenElement = document.getElementById(`${studentId}-lastSunscreen`);
-            if(lastCheckInElement) lastCheckInElement.textContent = 'N/A';
-            if(lastCheckOutElement) lastCheckOutElement.textContent = 'N/A';
-            if(lastSunscreenElement) lastSunscreenElement.textContent = 'N/A';
-            // Also count them as absent if they're in HTML but no data in Firebase
-            absentStudents++;
-            totalStudents++; // Still count them in total if they are in HTML
+            // If student data doesn't exist in Firebase, set to N/A
+            lastCheckInElement.textContent = 'N/A';
+            lastCheckOutElement.textContent = 'N/A';
+            lastSunscreenElement.textContent = 'N/A';
         }
     });
 
-    // Update the status bar counts
-    totalStudentsCount.textContent = totalStudents;
-    studentsPresentCount.textContent = presentStudents;
-    studentsAbsentCount.textContent = absentStudents;
+    // After updating all student cards, apply the current search filter
+    // and update the status bar based on visible students.
+    applySearchFilter();
 });
 
 
 // =======================================================
-// STEP 4: Attach Event Listeners to Buttons
+// STEP 4: Search Functionality
+// Filters students based on search input and updates status bar
+// =======================================================
+function applySearchFilter() {
+    const searchText = studentSearchInput.value.toLowerCase();
+    const studentItems = document.querySelectorAll('.student-item');
+
+    let totalVisibleStudents = 0;
+    let presentVisibleStudents = 0;
+    let absentVisibleStudents = 0;
+
+    studentItems.forEach(item => {
+        const studentName = item.querySelector('h3').textContent.toLowerCase();
+        const studentId = item.dataset.id.toLowerCase(); // Also search by ID for robustness
+
+        // Check if name or ID contains the search text
+        if (studentName.includes(searchText) || studentId.includes(searchText)) {
+            item.style.display = 'flex'; // Show the student card
+            totalVisibleStudents++;
+
+            // Recalculate present/absent for visible students
+            const lastCheckInTimeStr = item.querySelector('strong[id$="-lastCheckIn"]').textContent;
+            const lastCheckOutTimeStr = item.querySelector('strong[id$="-lastCheckOut"]').textContent;
+
+            const checkInTime = lastCheckInTimeStr !== 'N/A' ? new Date(lastCheckInTimeStr).getTime() : 0;
+            const checkOutTime = lastCheckOutTimeStr !== 'N/A' ? new Date(lastCheckOutTimeStr).getTime() : 0;
+
+            if (checkInTime > 0 && (checkOutTime === 0 || checkInTime > checkOutTime)) {
+                presentVisibleStudents++;
+            } else {
+                absentVisibleStudents++;
+            }
+        } else {
+            item.style.display = 'none'; // Hide the student card
+        }
+    });
+
+    // Update the status bar counts based on currently visible students
+    totalStudentsCount.textContent = totalVisibleStudents;
+    studentsPresentCount.textContent = presentVisibleStudents;
+    studentsAbsentCount.textContent = absentVisibleStudents;
+}
+
+
+// =======================================================
+// STEP 5: Attach Event Listeners
 // =======================================================
 document.addEventListener('DOMContentLoaded', () => {
+    // Attach listeners for check-in/out/sunscreen buttons
     document.querySelectorAll('.check-in-btn').forEach(button => {
         button.addEventListener('click', () => checkIn(button.dataset.id));
     });
@@ -110,13 +133,17 @@ document.addEventListener('DOMContentLoaded', () => {
         button.addEventListener('click', () => checkSunscreen(button.dataset.id));
     });
 
+    // Attach listeners for global buttons
     savePdfButton.addEventListener('click', saveAsPdf);
     resetAllButton.addEventListener('click', resetAllData);
+
+    // Attach listener for the search input
+    studentSearchInput.addEventListener('input', applySearchFilter);
 });
 
 
 // =======================================================
-// STEP 5: Core Check-in / Check-out / Sunscreen Functions
+// STEP 6: Core Check-in / Check-out / Sunscreen Functions
 // =======================================================
 
 async function checkIn(studentId) {
@@ -163,7 +190,7 @@ async function checkSunscreen(studentId) {
 
 
 // =======================================================
-// STEP 6: Save as PDF Function
+// STEP 7: Save as PDF Function
 // =======================================================
 async function saveAsPdf() {
     const element = document.getElementById('student-list');
@@ -213,7 +240,7 @@ async function saveAsPdf() {
 
 
 // =======================================================
-// STEP 7: Reset All Data Function
+// STEP 8: Reset All Data Function
 // =======================================================
 async function resetAllData() {
     if (!confirm("Are you sure you want to RESET ALL ATTENDANCE DATA? This action cannot be undone.")) {
