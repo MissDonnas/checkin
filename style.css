@@ -23,34 +23,33 @@ body {
 h1 {
     text-align: center;
     color: #333;
-    margin-bottom: 20px; /* Reduced margin to make space for status bar */
+    margin-bottom: 20px;
 }
 
-/* NEW: Status Bar Styles */
+/* Status Bar Styles */
 .status-bar {
     display: flex;
     justify-content: space-around;
     align-items: center;
-    background-color: #e9ecef; /* Light gray background */
+    background-color: #e9ecef;
     padding: 10px 15px;
     border-radius: 5px;
-    margin-bottom: 20px; /* Space below status bar */
+    margin-bottom: 20px;
     font-size: 0.95em;
     color: #333;
     border: 1px solid #dee2e6;
 }
 
 .status-bar span {
-    flex: 1; /* Distribute space evenly */
+    flex: 1;
     text-align: center;
     padding: 0 5px;
 }
 
 .status-bar strong {
     font-size: 1.1em;
-    color: #007bff; /* Blue for emphasis */
+    color: #007bff;
 }
-
 
 .top-buttons {
     display: flex;
@@ -65,12 +64,12 @@ h1 {
     border-radius: 5px;
     cursor: pointer;
     font-size: 16px;
-    flex-grow: 1; /* Make buttons grow to fill space */
+    flex-grow: 1;
     transition: background-color 0.3s ease;
 }
 
 .save-pdf-btn {
-    background-color: #17a2b8; /* Info blue */
+    background-color: #17a2b8;
     color: white;
 }
 
@@ -79,14 +78,13 @@ h1 {
 }
 
 .reset-btn {
-    background-color: #dc3545; /* Danger red */
+    background-color: #dc3545;
     color: white;
 }
 
 .reset-btn:hover {
     background-color: #c82333;
 }
-
 
 .student-item {
     background-color: #f9f9f9;
@@ -114,7 +112,7 @@ h1 {
 .student-item .buttons {
     display: flex;
     gap: 10px;
-    flex-wrap: wrap; /* Allow buttons to wrap to next line if space is tight */
+    flex-wrap: wrap;
 }
 
 .student-item button {
@@ -145,15 +143,15 @@ h1 {
 }
 
 .student-item button.sunscreen-btn {
-    background-color: #ffc107; /* Warning yellow */
-    color: #333; /* Dark text for contrast */
+    background-color: #ffc107;
+    color: #333;
 }
 
 .student-item button.sunscreen-btn:hover {
     background-color: #e0a800;
 }
 
-/* NEW: Styles for the "No students" message */
+/* Styles for the "No students" message */
 .hidden-message {
     text-align: center;
     color: #666;
