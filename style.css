@@ -182,3 +182,14 @@ h1 {
     border-radius: 5px;
     margin-top: 20px;
 }
+/* Styling for the current date display */
+.current-date {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #555;
+    text-align: center;
+    margin-bottom: 20px; /* Add some space below the date */
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+}
