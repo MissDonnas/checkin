@@ -188,53 +188,78 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Event listener for Save as PDF button
+    // Event listener for Save as PDF button
     const savePdfButton = document.getElementById('savePdfButton');
     if (savePdfButton) {
         savePdfButton.addEventListener('click', () => {
-            const studentListElement = document.getElementById('student-list');
-            // Temporarily make hidden items visible for PDF, then hide again
-            const hiddenItems = [];
-            studentListElement.querySelectorAll('.student-item').forEach(item => {
-                if (item.style.display === 'none') {
-                    item.style.display = ''; // Make visible
-                    hiddenItems.push(item);
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'pt', 'letter'); // 'p' for portrait, 'pt' for points, 'letter' for paper size
+
+            // Add a title to the PDF
+            const title = "Student Attendance Report";
+            doc.setFontSize(20);
+            doc.text(title, doc.internal.pageSize.getWidth() / 2, 60, { align: "center" });
+
+            // Add current date below the title
+            const today = new Date();
+            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const currentDate = today.toLocaleDateString(undefined, dateOptions);
+            doc.setFontSize(12);
+            doc.text(`Date: ${currentDate}`, doc.internal.pageSize.getWidth() / 2, 85, { align: "center" });
+
+            // Prepare table headers
+            const head = [['Name', 'Last Check In', 'Last Check Out', 'Last Sunscreen', 'Status']];
+
+            // Prepare table body data
+            const body = [];
+            const studentItems = document.querySelectorAll('.student-item');
+
+            studentItems.forEach(item => {
+                // Only include visible students in the PDF table
+                if (item.style.display !== 'none') {
+                    const studentName = item.querySelector('h3').textContent;
+                    const lastCheckIn = item.querySelector(`[id$="-lastCheckIn"]`).textContent;
+                    const lastCheckOut = item.querySelector(`[id$="-lastCheckOut"]`).textContent;
+                    const lastSunscreen = item.querySelector(`[id$="-lastSunscreen"]`).textContent;
+
+                    // Determine current status for the PDF
+                    let status = "Unknown";
+                    if (item.classList.contains('checked-in') && !item.classList.contains('checked-out')) {
+                        status = "Present";
+                    } else if (item.classList.contains('checked-out')) {
+                        status = "Checked Out";
+                    } else {
+                        status = "Absent";
+                    }
+
+                    body.push([studentName, lastCheckIn, lastCheckOut, lastSunscreen, status]);
                 }
             });
 
-            html2canvas(document.querySelector('.container'), {
-                scale: 2, // Increase scale for better quality
-                useCORS: true // Important for external images if any, though not likely here
-            }).then(canvas => {
-                const imgData = canvas.toDataURL('image/png');
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF('p', 'pt', 'letter'); // 'p' for portrait, 'pt' for points, 'letter' for paper size
-
-                const imgWidth = 612; // Letter width in points
-                const pageHeight = 792; // Letter height in points
-                const imgHeight = canvas.height * imgWidth / canvas.width;
-                let heightLeft = imgHeight;
-                let position = 0;
-
-                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                heightLeft -= pageHeight;
-
-                while (heightLeft >= 0) {
-                    position = heightLeft - imgHeight;
-                    pdf.addPage();
-                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                    heightLeft -= pageHeight;
+            // Generate the table using autoTable plugin
+            // The 'startY' option controls where the table begins vertically on the page
+            doc.autoTable({
+                head: head,
+                body: body,
+                startY: 120, // Start table below title and date
+                theme: 'striped', // 'striped', 'grid', 'plain'
+                headStyles: { fillColor: [60, 141, 188] }, // Example header color
+                columnStyles: {
+                    0: { cellWidth: 'auto' }, // Name column can be auto-width
+                    1: { cellWidth: 100 }, // Fixed width for timestamps
+                    2: { cellWidth: 100 },
+                    3: { cellWidth: 100 },
+                    4: { cellWidth: 70 } // Status column
+                },
+                didDrawPage: function(data) {
+                    // Footer for page numbers
+                    let pageNumber = doc.internal.getNumberOfPages();
+                    doc.setFontSize(10);
+                    doc.text("Page " + pageNumber, data.settings.margin.left, doc.internal.pageSize.height - 30);
                 }
-
-                pdf.save("student_attendance.pdf");
-
-                // Re-hide the items that were temporarily made visible
-                hiddenItems.forEach(item => {
-                    item.style.display = 'none';
-                });
-            }).catch(error => {
-                console.error("Error generating PDF:", error);
-                alert("Failed to generate PDF. Please try again.");
             });
+
+            doc.save("student_attendance_report.pdf");
         });
     }
 
