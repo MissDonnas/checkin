@@ -222,17 +222,8 @@ const lastCheckIn = item.querySelector(`[id$="-lastCheckIn"]`).textContent;
 const lastCheckOut = item.querySelector(`[id$="-lastCheckOut"]`).textContent;
 const lastSunscreen = item.querySelector(`[id$="-lastSunscreen"]`).textContent;
 
-// Determine current status for the PDF
-let status = "Unknown";
-if (item.classList.contains('checked-in') && !item.classList.contains('checked-out')) {
-status = "Present";
-} else if (item.classList.contains('checked-out')) {
-status = "Checked Out";
-} else {
-status = "Absent";
-}
 
-body.push([studentName, lastCheckIn, lastCheckOut, lastSunscreen, status]);
+body.push([studentName, lastCheckIn, lastCheckOut, lastSunscreen]);
 }
 });
 
