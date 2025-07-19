@@ -208,7 +208,7 @@ doc.setFontSize(12);
 doc.text(`Date: ${currentDate}`, doc.internal.pageSize.getWidth() / 2, 85, { align: "center" });
 
 // Prepare table headers
-const head = [['Name', 'Last Check In', 'Last Check Out', 'Last Sunscreen']];
+const head = [['Name', 'Last Check In', 'Last Check Out', 'Last Sunscreen', 'Status']];
 
 // Prepare table body data
 const body = [];
@@ -222,8 +222,17 @@ const lastCheckIn = item.querySelector(`[id$="-lastCheckIn"]`).textContent;
 const lastCheckOut = item.querySelector(`[id$="-lastCheckOut"]`).textContent;
 const lastSunscreen = item.querySelector(`[id$="-lastSunscreen"]`).textContent;
 
+// Determine current status for the PDF
+let status = "Unknown";
+if (item.classList.contains('checked-in') && !item.classList.contains('checked-out')) {
+status = "Present";
+} else if (item.classList.contains('checked-out')) {
+status = "Checked Out";
+} else {
+status = "Absent";
+}
 
-body.push([studentName, lastCheckIn, lastCheckOut, lastSunscreen]);
+body.push([studentName, lastCheckIn, lastCheckOut, lastSunscreen, status]);
 }
 });
 
@@ -240,6 +249,7 @@ columnStyles: {
 1: { cellWidth: 100 }, // Fixed width for timestamps
 2: { cellWidth: 100 },
 3: { cellWidth: 100 },
+4: { cellWidth: 70 } // Status column
 },
 didDrawPage: function(data) {
 // Footer for page numbers
@@ -258,6 +268,13 @@ const studentSearchInput = document.getElementById('studentSearch');
 if (studentSearchInput) {
 studentSearchInput.addEventListener('keyup', () => {
 filterStudentCards();
+updateStatusBar(); // Update status bar after filtering
+});
+}
 
+// Call this initially to populate status bar on load (after Firebase data might have loaded)
+// The Firebase listener also calls updateStatusBar, so this might be redundant if data loads fast,
+// but it ensures it's called even if no initial Firebase data is present.
+updateStatusBar();
 });
 
