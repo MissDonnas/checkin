@@ -194,16 +194,6 @@ document.addEventListener('DOMContentLoaded', () => {
         savePdfButton.addEventListener('click', () => {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'pt', 'letter'); // 'p' for portrait, 'pt' for points, 'letter' for paper size
- // Get today's date
-    const today = new Date();
-    const month = (today.getMonth() + 1).toString().padStart(2, '0'); // Months are 0-indexed
-    const day = today.getDate().toString().padStart(2, '0');
-
-    // Format the date as MM-DD
-    const formattedDate = `${month}-${day}`;
-
-    // Create the filename without the year
-    const filename = `2025 summer attendance (${formattedDate}).pdf`;
           
             // Add a title to the PDF
             const title = "Student Attendance Report";
@@ -268,7 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     doc.text("Page " + pageNumber, data.settings.margin.left, doc.internal.pageSize.height - 30);
                 }
             });
-
+              doc.save('attendance.pdf');
         });
     }
 
