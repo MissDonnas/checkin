@@ -13,10 +13,19 @@ const database = firebase.database();
 const studentsRef = database.ref('students');
 
 // Function to format timestamp
+// Function to format timestamp
 function formatTimestamp(timestamp) {
-if (!timestamp) return 'N/A';
-const date = new Date(timestamp);
-return date.toLocaleString([], {hour: '2-digit', minute: '2-digit}); // Adjust formatting as needed
+  if (!timestamp) return 'N/A';
+  const date = new Date(timestamp);
+  
+  // Options to display only hour and minute
+  const options = { 
+    hour: 'numeric', 
+    minute: '2-digit',
+    hour12: true // Set to false for 24-hour format
+  };
+
+  return date.toLocaleTimeString('en-US', options); // 'en-US' for US English format (e.g., 1:00 PM)
 }
 
 // Function to update a student's status in the database
