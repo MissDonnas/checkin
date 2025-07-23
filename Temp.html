@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Woods Trip Checklist</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        ul { list-style: none; padding: 0; }
+        li { margin-bottom: 10px; }
+        input[type="checkbox"] { margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Temporary attendance</h1>
+    <ul>
+        <li><label><input type="checkbox"> Grayson</label></li>
+        <li><label><input type="checkbox"> Oaklyn</label></li>
+        <li><label><input type="checkbox"> Magnolia</label></li>
+        <li><label><input type="checkbox"> Ben Beer</label></li>
+        <li><label><input type="checkbox"> Joe</label></li>
+        <li><label><input type="checkbox"> Orla</label></li>
+        <li><label><input type="checkbox"> Ben Boggs</label></li>
+        <li><label><input type="checkbox"> Nora</label></li>
+        <li><label><input type="checkbox"> Monroe</label></li>
+        <li><label><input type="checkbox"> Clayton</label></li>
+        <li><label><input type="checkbox"> Maddie</label></li>
+        <li><label><input type="checkbox"> Mali</label></li>
+        <li><label><input type="checkbox"> Theo</label></li>
+        <li><label><input type="checkbox"> Luke</label></li>
+        <li><label><input type="checkbox"> Olivia</label></li>
+        <li><label><input type="checkbox"> Sofia</label></li>
+        <li><label><input type="checkbox"> Aura</label></li>
+        <li><label><input type="checkbox"> Vada</label></li>
+        <li><label><input type="checkbox"> Ben Kiseda</label></li>
+        <li><label><input type="checkbox"> Henry</label></li>
+        <li><label><input type="checkbox"> James</label></li>
+        <li><label><input type="checkbox"> Ryan</label></li>
+        <li><label><input type="checkbox"> Lenny</label></li>
+        <li><label><input type="checkbox"> Neera</label></li>
+        <li><label><input type="checkbox"> Luciana</label></li>
+        <li><label><input type="checkbox"> Nora</label></li>
+        <li><label><input type="checkbox"> Marcella</label></li>
+        <li><label><input type="checkbox"> David</label></li>
+        <li><label><input type="checkbox"> Veda</label></li>
+        <li><label><input type="checkbox"> Mackenzie</label></li>
+        <li><label><input type="checkbox"> Riverly</label></li>
+        <li><label><input type="checkbox"> Asa</label></li>
+        <li><label><input type="checkbox"> Ava</label></li>
+        <li><label><input type="checkbox"> Harper</label></li>
+        <li><label><input type="checkbox"> Maisha</label></li>
+        <li><label><input type="checkbox"> Logan</label></li>
+        <li><label><input type="checkbox"> Loryn</label></li>
+        <li><label><input type="checkbox"> Mason</label></li>
+        <li><label><input type="checkbox"> Ashley</label></li>
+        <li><label><input type="checkbox"> Jack</label></li>
+        <li><label><input type="checkbox"> Raymond</label></li>
+        <li><label><input type="checkbox"> Savarnik</label></li>
+        <li><label><input type="checkbox"> Nivirth</label></li>
+        <li><label><input type="checkbox"> Smaya</label></li>
+    </ul>
+    <button onclick="clearChecklist()">Clear All</button>
+
+    <script>
+        function clearChecklist() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+        }
+    </script>
+</body>
+</html>
