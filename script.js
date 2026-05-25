@@ -1,289 +1,321 @@
+// FIREBASE CONFIGURATION
 const firebaseConfig = {
-apiKey: "AIzaSyBrK1aMhBv3SL-slt1AN0XaYszc2fsPzQ",
-authDomain: "attendance-6abf9.firebaseapp.com",
-databaseURL: "https://attendance-6abf9-default-rtdb.firebaseio.com",
-projectId: "attendance-6abf9",
-storageBucket: "attendance-6abf9.firebasestorage.app",
-messagingSenderId: "557254925412",
-appId: "1:557254925412:web:3c31d0a9e07a6477db5371"
+    apiKey: "AIzaSyBrK1aMhBv3SL-slt1AN0XaYszc2fsPzQ",
+    authDomain: "attendance-6abf9.firebaseapp.com",
+    databaseURL: "https://attendance-6abf9-default-rtdb.firebaseio.com",
+    projectId: "attendance-6abf9",
+    storageBucket: "attendance-6abf9.firebasestorage.app",
+    messagingSenderId: "557254925412",
+    appId: "1:557254925412:web:3c31d0a9e07a6477db5371"
 };
+
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 const studentsRef = database.ref('students');
+const historyRef = database.ref('history');
 
-// Function to format timestamp
-// Function to format timestamp
+// =====================================================================
+// MASTER ROSTER: All 44 students from your temp list are here.
+// To change someone to a short day, change "full" to "short".
+// =====================================================================
+const studentRoster = [
+    { id: "grayson", name: "Grayson", type: "full" },
+    { id: "oaklyn", name: "Oaklyn", type: "short" },
+    { id: "magnolia", name: "Magnolia", type: "full" },
+    { id: "ben-beer", name: "Ben Beer", type: "full" },
+    { id: "joe", name: "Joe", type: "full" },
+    { id: "orla", name: "Orla", type: "short" },
+    { id: "ben-boggs", name: "Ben Boggs", type: "full" },
+    { id: "nora-1", name: "Nora", type: "full" },
+    { id: "monroe", name: "Monroe", type: "full" },
+    { id: "clayton", name: "Clayton", type: "short" },
+    { id: "maddie", name: "Maddie", type: "full" },
+    { id: "mali", name: "Mali", type: "full" },
+    { id: "theo", name: "Theo", type: "full" },
+    { id: "luke", name: "Luke", type: "short" },
+    { id: "olivia", name: "Olivia", type: "full" },
+    { id: "sofia", name: "Sofia", type: "full" },
+    { id: "aura", name: "Aura", type: "short" },
+    { id: "vada", name: "Vada", type: "full" },
+    { id: "ben-kiseda", name: "Ben Kiseda", type: "full" },
+    { id: "henry", name: "Henry", type: "full" },
+    { id: "james", name: "James", type: "short" },
+    { id: "ryan", name: "Ryan", type: "full" },
+    { id: "lenny", name: "Lenny", type: "full" },
+    { id: "neera", name: "Neera", type: "full" },
+    { id: "luciana", name: "Luciana", type: "short" },
+    { id: "nora-2", name: "Nora (2)", type: "full" },
+    { id: "marcella", name: "Marcella", type: "full" },
+    { id: "david", name: "David", type: "short" },
+    { id: "veda", name: "Veda", type: "full" },
+    { id: "mackenzie", name: "Mackenzie", type: "full" },
+    { id: "riverly", name: "Riverly", type: "short" },
+    { id: "asa", name: "Asa", type: "full" },
+    { id: "ava", name: "Ava", type: "full" },
+    { id: "harper", name: "Harper", type: "full" },
+    { id: "maisha", name: "Maisha", type: "short" },
+    { id: "logan", name: "Logan", type: "full" },
+    { id: "loryn", name: "Loryn", type: "full" },
+    { id: "mason", name: "Mason", type: "full" },
+    { id: "ashley", name: "Ashley", type: "short" },
+    { id: "jack", name: "Jack", type: "full" },
+    { id: "raymond", name: "Raymond", type: "full" },
+    { id: "savarnik", name: "Savarnik", type: "full" },
+    { id: "nivirth", name: "Nivirth", type: "short" },
+    { id: "smaya", name: "Smaya", type: "full" }
+];
+
+// Utility: Format Time
 function formatTimestamp(timestamp) {
-  if (!timestamp) return 'N/A';
-  const date = new Date(timestamp);
-  
-  // Options to display only hour and minute
-  const options = { 
-    hour: 'numeric', 
-    minute: '2-digit',
-    hour12: true // Set to false for 24-hour format
-  };
-
-  return date.toLocaleTimeString('en-US', options); // 'en-US' for US English format (e.g., 1:00 PM)
+    if (!timestamp) return 'N/A';
+    return new Date(timestamp).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 }
 
-// Function to update a student's status in the database
+// 1. Build the HTML dynamically from the array
+function buildStudentList() {
+    const listContainer = document.getElementById('student-list');
+    listContainer.innerHTML = ''; // Clear first
+
+    // Sort alphabetically
+    studentRoster.sort((a, b) => a.name.localeCompare(b.name));
+
+    studentRoster.forEach(student => {
+        const badge = student.type === 'full' ? `<span class="badge-full">Full Day</span>` : `<span class="badge-short">Shortened</span>`;
+        
+        const card = document.createElement('div');
+        card.className = 'student-item';
+        card.dataset.id = student.id;
+        card.dataset.type = student.type; // Helps with tabs
+
+        card.innerHTML = `
+            <h3>${student.name} ${badge}</h3>
+            <div class="status-info">
+                <p>In: <strong id="${student.id}-lastCheckIn">N/A</strong></p>
+                <p>Out: <strong id="${student.id}-lastCheckOut">N/A</strong></p>
+                <p>Sun: <strong id="${student.id}-lastSunscreen">N/A</strong></p>
+            </div>
+            <div class="buttons">
+                <button class="check-in-btn" data-id="${student.id}">Check In</button>
+                <button class="check-out-btn" data-id="${student.id}">Check Out</button>
+                <button class="sunscreen-btn" data-id="${student.id}">Sunscreen</button>
+            </div>
+        `;
+        listContainer.appendChild(card);
+    });
+
+    calculateStaticCounters(); // Set scheduled counters
+}
+
+// 2. Counters Logic
+function calculateStaticCounters() {
+    const total = studentRoster.length;
+    const full = studentRoster.filter(s => s.type === 'full').length;
+    const short = studentRoster.filter(s => s.type === 'short').length;
+
+    document.getElementById('totalScheduledCount').textContent = total;
+    document.getElementById('fullScheduledCount').textContent = full;
+    document.getElementById('shortScheduledCount').textContent = short;
+}
+
+function updatePresentCounter() {
+    // Count items that have 'checked-in' class but NOT 'checked-out' class
+    let presentCount = 0;
+    document.querySelectorAll('.student-item').forEach(card => {
+        if (card.classList.contains('checked-in') && !card.classList.contains('checked-out')) {
+            presentCount++;
+        }
+    });
+    document.getElementById('studentsPresentCount').textContent = presentCount;
+}
+
+// 3. Tab Logic
+function setupTabs() {
+    const tabs = document.querySelectorAll('.tab-btn');
+    const searchInput = document.getElementById('studentSearch');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', (e) => {
+            // Remove active classes
+            tabs.forEach(t => t.classList.remove('active'));
+            e.target.classList.add('active');
+
+            const target = e.target.dataset.target;
+            
+            // Handle view switching (History vs Roster)
+            if (target === 'history') {
+                document.getElementById('view-students').style.display = 'none';
+                document.getElementById('view-history').style.display = 'block';
+                document.querySelector('.search-container').style.display = 'none'; // hide search in history
+            } else {
+                document.getElementById('view-students').style.display = 'block';
+                document.getElementById('view-history').style.display = 'none';
+                document.querySelector('.search-container').style.display = 'block';
+
+                // Filter the student cards
+                document.querySelectorAll('.student-item').forEach(card => {
+                    if (target === 'all' || card.dataset.type === target) {
+                        card.style.display = 'flex'; // Show
+                    } else {
+                        card.style.display = 'none'; // Hide
+                    }
+                });
+                searchInput.value = ''; // Clear search when switching tabs
+            }
+        });
+    });
+}
+
+// 4. Update Database
 function updateStudentStatus(studentId, statusType) {
-const timestamp = Date.now(); // Current timestamp
-const updates = {};
-updates[`/${studentId}/${statusType}`] = timestamp;
-if (statusType === 'lastCheckIn') {
-updates[`/${studentId}/checkedIn`] = true;
-} else if (statusType === 'lastCheckOut') {
-updates[`/${studentId}/checkedIn`] = false;
-}
-database.ref('students').update(updates)
-.then(() => {
-console.log(`${studentId} ${statusType} updated successfully.`);
-// No need to update UI here, Firebase listener will handle it
-})
-.catch(error => {
-console.error(`Error updating ${studentId} ${statusType}:`, error);
-});
+    const timestamp = Date.now();
+    const updates = {};
+    updates[`/${studentId}/${statusType}`] = timestamp;
+    
+    if (statusType === 'lastCheckIn') updates[`/${studentId}/checkedIn`] = true;
+    else if (statusType === 'lastCheckOut') updates[`/${studentId}/checkedIn`] = false;
+
+    database.ref('students').update(updates).catch(console.error);
 }
 
-// Function to reset all student data
-function resetAllData() {
-if (confirm('Are you sure you want to reset all student check-in/out data? This action cannot be undone.')) {
-database.ref('students').remove()
-.then(() => {
-console.log('All student data reset successfully.');
-// Visual feedback that data is cleared
-document.querySelectorAll('.student-item').forEach(item => {
-item.classList.remove('checked-in', 'checked-out', 'sunscreen-applied');
-item.querySelector(`[id$="-lastCheckIn"]`).textContent = 'N/A';
-item.querySelector(`[id$="-lastCheckOut"]`).textContent = 'N/A';
-item.querySelector(`[id$="-lastSunscreen"]`).textContent = 'N/A';
-});
-updateStatusBar(); // Update status bar after reset
-})
-.catch(error => {
-console.error('Error resetting all data:', error);
-alert('Error resetting data. Please try again.');
-});
-}
-}
+// 5. Save to History function
+function saveToHistory() {
+    const now = new Date();
+    const dateString = now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const timestampId = Date.now();
 
-// Function to update the status bar
-function updateStatusBar() {
-const studentItems = document.querySelectorAll('.student-item');
-let totalStudents = 0;
-let studentsPresent = 0;
+    // Create a snapshot of currently present vs absent
+    let snapshotData = {
+        date: dateString,
+        present: [],
+        absent: []
+    };
 
-studentItems.forEach(item => {
-// Only count visible students for the status bar
-if (item.style.display !== 'none') {
-totalStudents++;
-if (item.classList.contains('checked-in') && !item.classList.contains('checked-out')) {
-studentsPresent++;
-}
-}
-});
+    document.querySelectorAll('.student-item').forEach(card => {
+        const name = card.querySelector('h3').textContent.replace('Full Day', '').replace('Shortened', '').trim();
+        if (card.classList.contains('checked-in') && !card.classList.contains('checked-out')) {
+            snapshotData.present.push(name);
+        } else {
+            snapshotData.absent.push(name);
+        }
+    });
 
-const studentsAbsent = totalStudents - studentsPresent;
-
-document.getElementById('totalStudentsCount').textContent = totalStudents;
-document.getElementById('studentsPresentCount').textContent = studentsPresent;
-document.getElementById('studentsAbsentCount').textContent = studentsAbsent;
+    historyRef.child(timestampId).set(snapshotData).then(() => {
+        alert("Attendance history saved successfully!");
+    });
 }
 
 
-// --- Function to display current date ---
-function displayCurrentDate() {
-const dateElement = document.getElementById('current-date');
-if (dateElement) {
-const today = new Date();
-const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-dateElement.textContent = today.toLocaleDateString(undefined, options);
-}
-}
-
-
-// Function to filter student cards based on search input
-function filterStudentCards() {
-const searchInput = document.getElementById('studentSearch');
-if (!searchInput) return; // Exit if search input not found
-
-const filter = searchInput.value.toLowerCase();
-const studentList = document.getElementById('student-list');
-const studentItems = studentList.querySelectorAll('.student-item');
-
-studentItems.forEach(item => {
-const studentName = item.querySelector('h3').textContent.toLowerCase();
-if (studentName.includes(filter)) {
-item.style.display = ''; // Show the element
-} else {
-item.style.display = 'none'; // Hide the element
-}
-});
-updateStatusBar(); // Update status bar after filtering
-}
-
-
-// Listen for changes in Firebase database
-studentsRef.on('value', (snapshot) => {
-snapshot.forEach((childSnapshot) => {
-const studentId = childSnapshot.key;
-const studentData = childSnapshot.val();
-
-const studentItem = document.querySelector(`.student-item[data-id="${studentId}"]`);
-
-if (studentItem) {
-// Update last check-in/out/sunscreen times
-const lastCheckInEl = studentItem.querySelector(`[id="${studentId}-lastCheckIn"]`);
-if (lastCheckInEl) lastCheckInEl.textContent = formatTimestamp(studentData.lastCheckIn);
-
-const lastCheckOutEl = studentItem.querySelector(`[id="${studentId}-lastCheckOut"]`);
-if (lastCheckOutEl) lastCheckOutEl.textContent = formatTimestamp(studentData.lastCheckOut);
-
-const lastSunscreenEl = studentItem.querySelector(`[id="${studentId}-lastSunscreen"]`);
-if (lastSunscreenEl) lastSunscreenEl.textContent = formatTimestamp(studentData.lastSunscreen);
-
-// Update status classes
-studentItem.classList.remove('checked-in', 'checked-out', 'sunscreen-applied');
-
-if (studentData.lastCheckIn && (!studentData.lastCheckOut || studentData.lastCheckIn > studentData.lastCheckOut)) {
-studentItem.classList.add('checked-in');
-} else if (studentData.lastCheckOut) {
-studentItem.classList.add('checked-out');
-}
-
-if (studentData.lastSunscreen) {
-studentItem.classList.add('sunscreen-applied');
-}
-}
-});
-updateStatusBar(); // Update status bar after Firebase data sync
+// Event Delegation for Buttons (Better Performance)
+document.getElementById('student-list').addEventListener('click', (event) => {
+    if(event.target.tagName !== 'BUTTON') return;
+    const studentId = event.target.dataset.id;
+    
+    if (event.target.classList.contains('check-in-btn')) updateStudentStatus(studentId, 'lastCheckIn');
+    else if (event.target.classList.contains('check-out-btn')) updateStudentStatus(studentId, 'lastCheckOut');
+    else if (event.target.classList.contains('sunscreen-btn')) updateStudentStatus(studentId, 'lastSunscreen');
 });
 
 
-// DOM Content Loaded - Main setup
+// Search Functionality
+document.getElementById('studentSearch').addEventListener('input', (e) => {
+    const filter = e.target.value.toLowerCase();
+    const activeTab = document.querySelector('.tab-btn.active').dataset.target;
+
+    document.querySelectorAll('.student-item').forEach(card => {
+        const name = card.querySelector('h3').textContent.toLowerCase();
+        const matchesSearch = name.includes(filter);
+        const matchesTab = (activeTab === 'all' || card.dataset.type === activeTab);
+        
+        card.style.display = (matchesSearch && matchesTab) ? 'flex' : 'none';
+    });
+});
+
+
+// MAIN INIT ON LOAD
 document.addEventListener('DOMContentLoaded', () => {
-// Call to display the current date when the page loads
-displayCurrentDate();
+    // 1. Show Date
+    document.getElementById('current-date').textContent = new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-// Event listeners for check-in/out/sunscreen buttons
-document.querySelectorAll('.check-in-btn').forEach(button => {
-button.addEventListener('click', (event) => {
-const studentId = event.target.dataset.id;
-updateStudentStatus(studentId, 'lastCheckIn');
+    // 2. Build DOM
+    buildStudentList();
+    setupTabs();
+
+    // 3. Listen to Firebase Database for Live Updates
+    studentsRef.on('value', (snapshot) => {
+        snapshot.forEach((child) => {
+            const id = child.key;
+            const data = child.val();
+            const card = document.querySelector(`.student-item[data-id="${id}"]`);
+
+            if (card) {
+                // Update text times
+                card.querySelector(`#${id}-lastCheckIn`).textContent = formatTimestamp(data.lastCheckIn);
+                card.querySelector(`#${id}-lastCheckOut`).textContent = formatTimestamp(data.lastCheckOut);
+                card.querySelector(`#${id}-lastSunscreen`).textContent = formatTimestamp(data.lastSunscreen);
+
+                // Update visual styling (greyed out vs green)
+                card.classList.remove('checked-in', 'checked-out');
+                if (data.lastCheckIn && (!data.lastCheckOut || data.lastCheckIn > data.lastCheckOut)) {
+                    card.classList.add('checked-in');
+                } else if (data.lastCheckOut) {
+                    card.classList.add('checked-out'); // Will grey out the box
+                }
+            }
+        });
+        updatePresentCounter(); // Recalculate present counter
+    });
+
+    // 4. Listen to History Database
+    historyRef.orderByKey().on('value', snapshot => {
+        const historyContainer = document.getElementById('history-content');
+        historyContainer.innerHTML = '';
+        
+        let records = [];
+        snapshot.forEach(child => { records.push(child.val()); });
+        
+        // Reverse array to show newest first
+        records.reverse().forEach(record => {
+            const historyItem = document.createElement('div');
+            historyItem.className = 'history-record';
+            historyItem.innerHTML = `
+                <h4>📅 ${record.date}</h4>
+                <p><strong>Present (${record.present ? record.present.length : 0}):</strong> ${record.present ? record.present.join(', ') : 'None'}</p>
+                <p style="color: #666; font-size: 0.85em;"><strong>Absent:</strong> ${record.absent ? record.absent.join(', ') : 'None'}</p>
+            `;
+            historyContainer.appendChild(historyItem);
+        });
+    });
+
+    // Reset Button
+    document.getElementById('resetAllButton').addEventListener('click', () => {
+        if (confirm('Clear today\'s board? Make sure you saved a PDF/History first!')) {
+            database.ref('students').remove();
+        }
+    });
+
+    // Save PDF Button
+    document.getElementById('savePdfButton').addEventListener('click', () => {
+        saveToHistory(); // Auto-saves to History tab
+        
+        // Generate PDF
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'pt', 'letter');
+        doc.setFontSize(20);
+        doc.text("Daily Attendance Report", doc.internal.pageSize.getWidth() / 2, 60, { align: "center" });
+        doc.setFontSize(12);
+        doc.text(new Date().toLocaleDateString(), doc.internal.pageSize.getWidth() / 2, 85, { align: "center" });
+
+        const body = [];
+        document.querySelectorAll('.student-item').forEach(card => {
+            const name = card.querySelector('h3').textContent;
+            let status = "Absent";
+            if (card.classList.contains('checked-in')) status = "Present";
+            if (card.classList.contains('checked-out')) status = "Checked Out";
+            body.push([name, status]);
+        });
+
+        doc.autoTable({ head: [['Student', 'Final Status']], body: body, startY: 100 });
+        doc.save("Attendance.pdf");
+    });
 });
-});
-
-document.querySelectorAll('.check-out-btn').forEach(button => {
-button.addEventListener('click', (event) => {
-const studentId = event.target.dataset.id;
-updateStudentStatus(studentId, 'lastCheckOut');
-});
-});
-
-document.querySelectorAll('.sunscreen-btn').forEach(button => {
-button.addEventListener('click', (event) => {
-const studentId = event.target.dataset.id;
-updateStudentStatus(studentId, 'lastSunscreen');
-});
-});
-
-// Event listener for Reset All button
-const resetAllButton = document.getElementById('resetAllButton');
-if (resetAllButton) {
-resetAllButton.addEventListener('click', resetAllData);
-}
-
-// Event listener for Save as PDF button
-// Event listener for Save as PDF button
-const savePdfButton = document.getElementById('savePdfButton');
-if (savePdfButton) {
-savePdfButton.addEventListener('click', () => {
-const { jsPDF } = window.jspdf;
-const doc = new jsPDF('p', 'pt', 'letter'); // 'p' for portrait, 'pt' for points, 'letter' for paper size
-
-// Add a title to the PDF
-const title = "Student Attendance Report";
-doc.setFontSize(20);
-doc.text(title, doc.internal.pageSize.getWidth() / 2, 60, { align: "center" });
-
-// Add current date below the title
-const today = new Date();
-const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-const currentDate = today.toLocaleDateString(undefined, dateOptions);
-doc.setFontSize(12);
-doc.text(`Date: ${currentDate}`, doc.internal.pageSize.getWidth() / 2, 85, { align: "center" });
-
-// Prepare table headers
-const head = [['Name', 'Last Check In', 'Last Check Out', 'Last Sunscreen', 'Status']];
-
-// Prepare table body data
-const body = [];
-const studentItems = document.querySelectorAll('.student-item');
-
-studentItems.forEach(item => {
-// Only include visible students in the PDF table
-if (item.style.display !== 'none') {
-const studentName = item.querySelector('h3').textContent;
-const lastCheckIn = item.querySelector(`[id$="-lastCheckIn"]`).textContent;
-const lastCheckOut = item.querySelector(`[id$="-lastCheckOut"]`).textContent;
-const lastSunscreen = item.querySelector(`[id$="-lastSunscreen"]`).textContent;
-
-// Determine current status for the PDF
-let status = "Unknown";
-if (item.classList.contains('checked-in') && !item.classList.contains('checked-out')) {
-status = "Present";
-} else if (item.classList.contains('checked-out')) {
-status = "Checked Out";
-} else {
-status = "Absent";
-}
-
-body.push([studentName, lastCheckIn, lastCheckOut, lastSunscreen, status]);
-}
-});
-
-// Generate the table using autoTable plugin
-// The 'startY' option controls where the table begins vertically on the page
-doc.autoTable({
-head: head,
-body: body,
-startY: 120, // Start table below title and date
-theme: 'striped', // 'striped', 'grid', 'plain'
-headStyles: { fillColor: [60, 141, 188] }, // Example header color
-columnStyles: {
-0: { cellWidth: 'auto' }, // Name column can be auto-width
-1: { cellWidth: 100 }, // Fixed width for timestamps
-2: { cellWidth: 100 },
-3: { cellWidth: 100 },
-4: { cellWidth: 70 } // Status column
-},
-didDrawPage: function(data) {
-// Footer for page numbers
-let pageNumber = doc.internal.getNumberOfPages();
-doc.setFontSize(10);
-doc.text("Page " + pageNumber, data.settings.margin.left, doc.internal.pageSize.height - 30);
-}
-});
-
-doc.save("student_attendance_report.pdf");
-});
-}
-
-// Event listener for search input
-const studentSearchInput = document.getElementById('studentSearch');
-if (studentSearchInput) {
-studentSearchInput.addEventListener('keyup', () => {
-filterStudentCards();
-updateStatusBar(); // Update status bar after filtering
-});
-}
-
-// Call this initially to populate status bar on load (after Firebase data might have loaded)
-// The Firebase listener also calls updateStatusBar, so this might be redundant if data loads fast,
-// but it ensures it's called even if no initial Firebase data is present.
-updateStatusBar();
-});
-
