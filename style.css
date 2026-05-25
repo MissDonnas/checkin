@@ -16,7 +16,7 @@ body {
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     width: 100%;
-    max-width: 800px; /* Widened slightly for tabs */
+    max-width: 800px;
     box-sizing: border-box;
 }
 
@@ -76,16 +76,11 @@ h1 { text-align: center; color: #333; margin-bottom: 20px; }
     box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: 0.3s ease;
 }
 
-/* NEW: Dynamic Status Colors */
-.student-item.checked-in {
-    border-left: 5px solid #28a745; /* Green bar for present */
-    background-color: #f8fff9;
-}
-.student-item.checked-out {
-    opacity: 0.6; /* Greyed out */
-    background-color: #f0f0f0;
-    border-left: 5px solid #6c757d;
-}
+.student-item.checked-in { border-left: 5px solid #28a745; background-color: #f8fff9; }
+.student-item.checked-out { opacity: 0.6; background-color: #f0f0f0; border-left: 5px solid #6c757d; }
+
+.student-item.not-scheduled { opacity: 0.4; order: 99; background-color: #fafafa; border-left: 5px solid #ccc; }
+.badge-not-scheduled { font-size: 0.7em; background: #e0e0e0; color: #555; padding: 3px 8px; border-radius: 12px; }
 
 .student-item h3 { margin: 0; color: #0056b3; display: flex; justify-content: space-between;}
 .badge-full { font-size: 0.7em; background: #17a2b8; color: white; padding: 3px 8px; border-radius: 12px; }
@@ -102,23 +97,34 @@ h1 { text-align: center; color: #333; margin-bottom: 20px; }
 .sunscreen-btn { background-color: #ffc107; color: #333; }
 .buttons button:hover { opacity: 0.8; }
 
-/* HISTORY STYLING */
+/* NEW: EXPANDABLE HISTORY ACCORDION STYLING */
 .history-record {
-    background: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 10px;
-    border-left: 4px solid #17a2b8; font-size: 0.9em;
+    background: #fff; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 10px;
+    overflow: hidden; transition: 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
-.history-record h4 { margin: 0 0 10px 0; color: #333; }
-/* NEW: Day of the week scheduling styles */
-.student-item.not-scheduled {
-    opacity: 0.4;
-    order: 99; /* Pushes unscheduled kids to the bottom of the list */
-    background-color: #fafafa;
-    border-left: 5px solid #ccc;
+.history-header {
+    background: #f9f9f9; padding: 15px; cursor: pointer; border-left: 4px solid #17a2b8;
+    display: flex; justify-content: space-between; align-items: center; font-weight: bold; color: #333;
 }
-.badge-not-scheduled {
-    font-size: 0.7em;
-    background: #e0e0e0;
-    color: #555;
-    padding: 3px 8px;
-    border-radius: 12px;
+.history-header:hover { background: #eee; }
+.history-details {
+    padding: 15px; display: none; border-top: 1px solid #ddd; background: #fff;
 }
+.history-record.expanded .history-details { display: block; }
+.history-record.expanded .history-header { border-bottom: 1px solid #ddd; background: #eef7f8;}
+.history-toggle-icon { font-size: 1.2em; transition: transform 0.3s; color: #666;}
+.history-record.expanded .history-toggle-icon { transform: rotate(180deg); color: #17a2b8;}
+
+.student-history-grid {
+    display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 5px;
+}
+.history-category {
+    background: #f8f9fa; padding: 15px; border-radius: 5px; border: 1px solid #e9ecef;
+}
+.history-category h5 { margin: 0 0 10px 0; color: #0056b3; border-bottom: 2px solid #ccc; padding-bottom: 5px; font-size: 1.1em;}
+.history-student-row {
+    display: flex; justify-content: space-between; font-size: 0.9em; border-bottom: 1px dashed #ddd; padding: 8px 0; align-items: center;
+}
+.history-student-row:last-child { border-bottom: none; }
+.history-student-name { font-weight: bold; color: #444; width: 30%;}
+.history-student-times { color: #666; font-size: 0.9em; display: flex; gap: 15px; width: 70%; justify-content: flex-end;}
