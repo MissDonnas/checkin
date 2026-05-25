@@ -14,16 +14,12 @@ const database = firebase.database();
 const studentsRef = database.ref('students');
 const historyRef = database.ref('history');
 
-// =====================================================================
-// MASTER ROSTER: Now with specific days of the week!
-// Edit the "days" array to match exactly when the child is scheduled.
-// =====================================================================
+// MASTER ROSTER
 const studentRoster = [
     { id: "grayson", name: "Grayson", type: "full", days: ["Monday", "Wednesday", "Friday"] },
     { id: "oaklyn", name: "Oaklyn", type: "short", days: ["Tuesday", "Thursday"] },
     { id: "magnolia", name: "Magnolia", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
     { id: "ben-beer", name: "Ben Beer", type: "full", days: ["Tuesday", "Wednesday", "Thursday"] },
-    // I have set the rest to Monday-Friday as a default. Edit as needed!
     { id: "joe", name: "Joe", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
     { id: "orla", name: "Orla", type: "short", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
     { id: "ben-boggs", name: "Ben Boggs", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
@@ -51,7 +47,7 @@ const studentRoster = [
     { id: "veda", name: "Veda", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
     { id: "mackenzie", name: "Mackenzie", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
     { id: "riverly", name: "Riverly", type: "short", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
-    { id: "asa", name: "Asa", type: "full", days: ["Tuesday", "Wednesday", "Thursday", "Friday"] },
+    { id: "asa", name: "Asa", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
     { id: "ava", name: "Ava", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
     { id: "harper", name: "Harper", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
     { id: "maisha", name: "Maisha", type: "short", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
@@ -71,14 +67,11 @@ function formatTimestamp(timestamp) {
     return new Date(timestamp).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 }
 
-// 1. Build the HTML dynamically based on TODAY'S DAY
 function buildStudentList() {
     const listContainer = document.getElementById('student-list');
     listContainer.innerHTML = ''; 
 
-    // Get today's day name (e.g., "Monday")
     const todayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
-
     studentRoster.sort((a, b) => a.name.localeCompare(b.name));
 
     let scheduledTotal = 0;
@@ -86,7 +79,6 @@ function buildStudentList() {
     let scheduledShort = 0;
 
     studentRoster.forEach(student => {
-        // Check if the student is scheduled for today
         const isScheduledToday = student.days.includes(todayName);
         
         let badgeHtml = '';
@@ -103,7 +95,6 @@ function buildStudentList() {
         }
         
         const card = document.createElement('div');
-        // Add a special class if they aren't scheduled today so CSS can dim them
         card.className = `student-item ${isScheduledToday ? '' : 'not-scheduled'}`;
         card.dataset.id = student.id;
         card.dataset.type = student.type; 
@@ -124,7 +115,6 @@ function buildStudentList() {
         listContainer.appendChild(card);
     });
 
-    // Update the counters to only show who is expected TODAY
     document.getElementById('totalScheduledCount').textContent = scheduledTotal;
     document.getElementById('fullScheduledCount').textContent = scheduledFull;
     document.getElementById('shortScheduledCount').textContent = scheduledShort;
@@ -184,6 +174,7 @@ function updateStudentStatus(studentId, statusType) {
     database.ref('students').update(updates).catch(console.error);
 }
 
+// NEW: Updated to save all timestamp data into the database
 function saveToHistory() {
     const now = new Date();
     const dateString = now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -196,17 +187,22 @@ function saveToHistory() {
     };
 
     document.querySelectorAll('.student-item').forEach(card => {
+        // Strip out the badge to get just the name
         const nameElement = card.querySelector('h3').cloneNode(true);
-        // Remove the badge text before saving the name
         const badge = nameElement.querySelector('span');
         if(badge) badge.remove();
-        const name = nameElement.textContent.trim();
+        
+        const studentInfo = {
+            name: nameElement.textContent.trim(),
+            timeIn: card.querySelector(`#${card.dataset.id}-lastCheckIn`).textContent,
+            timeOut: card.querySelector(`#${card.dataset.id}-lastCheckOut`).textContent,
+            sunscreen: card.querySelector(`#${card.dataset.id}-lastSunscreen`).textContent
+        };
 
         if (card.classList.contains('checked-in') && !card.classList.contains('checked-out')) {
-            snapshotData.present.push(name);
+            snapshotData.present.push(studentInfo);
         } else if (!card.classList.contains('not-scheduled')) {
-            // Only log them as absent if they were actually scheduled today
-            snapshotData.absent.push(name);
+            snapshotData.absent.push(studentInfo);
         }
     });
 
@@ -232,7 +228,6 @@ document.getElementById('studentSearch').addEventListener('input', (e) => {
         const name = card.querySelector('h3').textContent.toLowerCase();
         const matchesSearch = name.includes(filter);
         const matchesTab = (activeTab === 'all' || card.dataset.type === activeTab);
-        
         card.style.display = (matchesSearch && matchesTab) ? 'flex' : 'none';
     });
 });
@@ -265,6 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updatePresentCounter(); 
     });
 
+    // NEW: Updated History Viewer to build the accordion and read the detailed times
     historyRef.orderByKey().on('value', snapshot => {
         const historyContainer = document.getElementById('history-content');
         historyContainer.innerHTML = '';
@@ -273,13 +269,66 @@ document.addEventListener('DOMContentLoaded', () => {
         snapshot.forEach(child => { records.push(child.val()); });
         
         records.reverse().forEach(record => {
+            const presentCount = record.present ? record.present.length : 0;
+            const absentCount = record.absent ? record.absent.length : 0;
+
             const historyItem = document.createElement('div');
             historyItem.className = 'history-record';
+            
+            // Build Present List
+            let presentHtml = '';
+            if (record.present && presentCount > 0) {
+                record.present.forEach(s => {
+                    // Handles the older basic saves and the new detailed saves
+                    if (typeof s === 'string') {
+                         presentHtml += `<div class="history-student-row"><span class="history-student-name">${s}</span></div>`;
+                    } else {
+                         presentHtml += `
+                         <div class="history-student-row">
+                             <span class="history-student-name">${s.name}</span>
+                             <span class="history-student-times">
+                                 <span><strong>In:</strong> ${s.timeIn}</span> 
+                                 <span><strong>Out:</strong> ${s.timeOut}</span>
+                                 <span><strong>Sun:</strong> ${s.sunscreen}</span>
+                             </span>
+                         </div>`;
+                    }
+                });
+            } else { presentHtml = '<p>None</p>'; }
+
+            // Build Absent List
+            let absentHtml = '';
+            if (record.absent && absentCount > 0) {
+                record.absent.forEach(s => {
+                    const nameToDisplay = typeof s === 'string' ? s : s.name;
+                    absentHtml += `<div class="history-student-row"><span class="history-student-name">${nameToDisplay}</span></div>`;
+                });
+            } else { absentHtml = '<p>None</p>'; }
+
             historyItem.innerHTML = `
-                <h4>📅 ${record.date}</h4>
-                <p><strong>Present (${record.present ? record.present.length : 0}):</strong> ${record.present ? record.present.join(', ') : 'None'}</p>
-                <p style="color: #666; font-size: 0.85em;"><strong>Absent:</strong> ${record.absent ? record.absent.join(', ') : 'None'}</p>
+                <div class="history-header">
+                    <span>📅 ${record.date} — Present: ${presentCount}</span>
+                    <span class="history-toggle-icon">▼</span>
+                </div>
+                <div class="history-details">
+                    <div class="student-history-grid">
+                        <div class="history-category">
+                            <h5>Present (${presentCount})</h5>
+                            ${presentHtml}
+                        </div>
+                        <div class="history-category">
+                            <h5>Absent (${absentCount})</h5>
+                            ${absentHtml}
+                        </div>
+                    </div>
+                </div>
             `;
+            
+            // Allow clicking to expand/collapse
+            historyItem.querySelector('.history-header').addEventListener('click', () => {
+                historyItem.classList.toggle('expanded');
+            });
+
             historyContainer.appendChild(historyItem);
         });
     });
@@ -302,7 +351,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const body = [];
         document.querySelectorAll('.student-item').forEach(card => {
-            // Only add them to the PDF if they were scheduled today
             if (!card.classList.contains('not-scheduled')) {
                 const nameElement = card.querySelector('h3').cloneNode(true);
                 const badge = nameElement.querySelector('span');
