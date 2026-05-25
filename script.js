@@ -48,7 +48,7 @@ const studentRoster = [
     { id: "mackenzie", name: "Mackenzie", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
     { id: "riverly", name: "Riverly", type: "short", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
     { id: "asa", name: "Asa", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
-    { id: "ava", name: "Ava", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
+    { id: "ava", name: "Ava LAstname", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
     { id: "harper", name: "Harper", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
     { id: "maisha", name: "Maisha", type: "short", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
     { id: "logan", name: "Logan", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
