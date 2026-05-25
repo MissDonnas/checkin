@@ -1,25 +1,57 @@
-<div class="container">
-    <h1>Student Attendance</h1>
-    <div id="current-date" class="current-date"></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Check-in/Check-out</title>
+    <link rel="stylesheet" href="style.css">
 
-    <div class="status-bar">
-        <span>Total: <strong id="totalCount">0</strong></span>
-        <span>Full: <strong id="fullScheduledCount">0</strong></span>
-        <span>Short: <strong id="shortScheduledCount">0</strong></span>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://unpkg.com/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Student Attendance</h1>
+        <div id="current-date" class="current-date"></div>
+
+        <div id="status-bar" class="status-bar">
+            <div class="stat-box">Total Scheduled: <strong id="totalScheduledCount">0</strong></div>
+            <div class="stat-box">Scheduled Full: <strong id="fullScheduledCount">0</strong></div>
+            <div class="stat-box">Scheduled Short: <strong id="shortScheduledCount">0</strong></div>
+            <div class="stat-box highlight">Currently Present: <strong id="studentsPresentCount">0</strong></div>
+        </div>
+
+        <div class="top-buttons">
+            <button id="savePdfButton" class="action-btn save-pdf-btn">Save PDF & History</button>
+            <button id="resetAllButton" class="action-btn reset-btn">Reset Day</button>
+        </div>
+
+        <div class="search-container">
+            <input type="text" id="studentSearch" placeholder="Search by name..." class="search-input">
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-target="all">All Students</button>
+            <button class="tab-btn" data-target="full">Full Day Only</button>
+            <button class="tab-btn" data-target="short">Shortened Day Only</button>
+            <button class="tab-btn" data-target="history">Past History</button>
+        </div>
+
+        <div id="view-students" class="view-section active">
+            <div id="student-list" class="student-list"></div>
+        </div>
+
+        <div id="view-history" class="view-section" style="display: none;">
+            <h2>Past Attendance Records</h2>
+            <div id="history-content">
+                </div>
+        </div>
+
     </div>
-
-    <div class="tabs">
-        <button class="tab-btn active" onclick="showTab('all')">All</button>
-        <button class="tab-btn" onclick="showTab('full')">Full Day</button>
-        <button class="tab-btn" onclick="showTab('short')">Shortened</button>
-        <button class="tab-btn" onclick="showTab('history')">History</button>
-    </div>
-
-    <div id="student-list" class="tab-content active"></div>
-    <div id="history-list" class="tab-content"></div>
-
-    <div class="top-buttons">
-        <button id="savePdfButton" class="action-btn save-pdf-btn">Save Report</button>
-        <button id="resetAllButton" class="action-btn reset-btn">Reset Day</button>
-    </div>
-</div>
+    <script src="script.js"></script>
+</body>
+</html>
