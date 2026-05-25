@@ -14,7 +14,6 @@ const database = firebase.database();
 const studentsRef = database.ref('students');
 const historyRef = database.ref('history');
 
-// MASTER ROSTER
 const studentRoster = [
     { id: "grayson", name: "Grayson", type: "full", days: ["Monday", "Wednesday", "Friday"] },
     { id: "oaklyn", name: "Oaklyn", type: "short", days: ["Tuesday", "Thursday"] },
@@ -48,7 +47,7 @@ const studentRoster = [
     { id: "mackenzie", name: "Mackenzie", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
     { id: "riverly", name: "Riverly", type: "short", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
     { id: "asa", name: "Asa", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
-    { id: "ava", name: "Ava LAstname", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
+    { id: "ava", name: "Ava", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
     { id: "harper", name: "Harper", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
     { id: "maisha", name: "Maisha", type: "short", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
     { id: "logan", name: "Logan", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
@@ -70,27 +69,18 @@ function formatTimestamp(timestamp) {
 function buildStudentList() {
     const listContainer = document.getElementById('student-list');
     listContainer.innerHTML = ''; 
-
     const todayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
     studentRoster.sort((a, b) => a.name.localeCompare(b.name));
 
-    let scheduledTotal = 0;
-    let scheduledFull = 0;
-    let scheduledShort = 0;
+    let scheduledTotal = 0, scheduledFull = 0, scheduledShort = 0;
 
     studentRoster.forEach(student => {
         const isScheduledToday = student.days.includes(todayName);
+        let badgeHtml = !isScheduledToday ? `<span class="badge-not-scheduled">Not Scheduled Today</span>` : 
+                        (student.type === 'full' ? `<span class="badge-full">Full Day</span>` : `<span class="badge-short">Shortened</span>`);
         
-        let badgeHtml = '';
-        if (!isScheduledToday) {
-            badgeHtml = `<span class="badge-not-scheduled">Not Scheduled Today</span>`;
-        } else if (student.type === 'full') {
-            badgeHtml = `<span class="badge-full">Full Day</span>`;
-            scheduledFull++;
-            scheduledTotal++;
-        } else {
-            badgeHtml = `<span class="badge-short">Shortened</span>`;
-            scheduledShort++;
+        if (isScheduledToday) {
+            student.type === 'full' ? scheduledFull++ : scheduledShort++;
             scheduledTotal++;
         }
         
@@ -98,7 +88,6 @@ function buildStudentList() {
         card.className = `student-item ${isScheduledToday ? '' : 'not-scheduled'}`;
         card.dataset.id = student.id;
         card.dataset.type = student.type; 
-
         card.innerHTML = `
             <h3>${student.name} ${badgeHtml}</h3>
             <div class="status-info">
@@ -123,24 +112,18 @@ function buildStudentList() {
 function updatePresentCounter() {
     let presentCount = 0;
     document.querySelectorAll('.student-item').forEach(card => {
-        if (card.classList.contains('checked-in') && !card.classList.contains('checked-out')) {
-            presentCount++;
-        }
+        if (card.classList.contains('checked-in') && !card.classList.contains('checked-out')) presentCount++;
     });
     document.getElementById('studentsPresentCount').textContent = presentCount;
 }
 
 function setupTabs() {
     const tabs = document.querySelectorAll('.tab-btn');
-    const searchInput = document.getElementById('studentSearch');
-
     tabs.forEach(tab => {
         tab.addEventListener('click', (e) => {
             tabs.forEach(t => t.classList.remove('active'));
             e.target.classList.add('active');
-
             const target = e.target.dataset.target;
-            
             if (target === 'history') {
                 document.getElementById('view-students').style.display = 'none';
                 document.getElementById('view-history').style.display = 'block';
@@ -149,15 +132,9 @@ function setupTabs() {
                 document.getElementById('view-students').style.display = 'block';
                 document.getElementById('view-history').style.display = 'none';
                 document.querySelector('.search-container').style.display = 'block';
-
                 document.querySelectorAll('.student-item').forEach(card => {
-                    if (target === 'all' || card.dataset.type === target) {
-                        card.style.display = 'flex'; 
-                    } else {
-                        card.style.display = 'none'; 
-                    }
+                    card.style.display = (target === 'all' || card.dataset.type === target) ? 'flex' : 'none';
                 });
-                searchInput.value = ''; 
             }
         });
     });
@@ -167,31 +144,21 @@ function updateStudentStatus(studentId, statusType) {
     const timestamp = Date.now();
     const updates = {};
     updates[`/${studentId}/${statusType}`] = timestamp;
-    
     if (statusType === 'lastCheckIn') updates[`/${studentId}/checkedIn`] = true;
     else if (statusType === 'lastCheckOut') updates[`/${studentId}/checkedIn`] = false;
-
-    database.ref('students').update(updates).catch(console.error);
+    database.ref('students').update(updates);
 }
 
-// NEW: Updated to save all timestamp data into the database
 function saveToHistory() {
     const now = new Date();
     const dateString = now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
     const timestampId = Date.now();
-
-    let snapshotData = {
-        date: dateString,
-        present: [],
-        absent: []
-    };
+    let snapshotData = { date: dateString, present: [], absent: [] };
 
     document.querySelectorAll('.student-item').forEach(card => {
-        // Strip out the badge to get just the name
         const nameElement = card.querySelector('h3').cloneNode(true);
         const badge = nameElement.querySelector('span');
         if(badge) badge.remove();
-        
         const studentInfo = {
             name: nameElement.textContent.trim(),
             timeIn: card.querySelector(`#${card.dataset.id}-lastCheckIn`).textContent,
@@ -199,42 +166,24 @@ function saveToHistory() {
             sunscreen: card.querySelector(`#${card.dataset.id}-lastSunscreen`).textContent
         };
 
-        if (card.classList.contains('checked-in') && !card.classList.contains('checked-out')) {
-            snapshotData.present.push(studentInfo);
-        } else if (!card.classList.contains('not-scheduled')) {
-            snapshotData.absent.push(studentInfo);
-        }
+        if (card.classList.contains('checked-in') && !card.classList.contains('checked-out')) snapshotData.present.push(studentInfo);
+        else if (!card.classList.contains('not-scheduled')) snapshotData.absent.push(studentInfo);
     });
-
-    historyRef.child(timestampId).set(snapshotData).then(() => {
-        alert("Attendance history saved successfully!");
-    });
+    historyRef.child(timestampId).set(snapshotData);
 }
 
+// History Event Listeners
 document.getElementById('student-list').addEventListener('click', (event) => {
     if(event.target.tagName !== 'BUTTON') return;
-    const studentId = event.target.dataset.id;
-    
-    if (event.target.classList.contains('check-in-btn')) updateStudentStatus(studentId, 'lastCheckIn');
-    else if (event.target.classList.contains('check-out-btn')) updateStudentStatus(studentId, 'lastCheckOut');
-    else if (event.target.classList.contains('sunscreen-btn')) updateStudentStatus(studentId, 'lastSunscreen');
+    const id = event.target.dataset.id;
+    if (event.target.classList.contains('check-in-btn')) updateStudentStatus(id, 'lastCheckIn');
+    else if (event.target.classList.contains('check-out-btn')) updateStudentStatus(id, 'lastCheckOut');
+    else if (event.target.classList.contains('sunscreen-btn')) updateStudentStatus(id, 'lastSunscreen');
 });
 
-document.getElementById('studentSearch').addEventListener('input', (e) => {
-    const filter = e.target.value.toLowerCase();
-    const activeTab = document.querySelector('.tab-btn.active').dataset.target;
-
-    document.querySelectorAll('.student-item').forEach(card => {
-        const name = card.querySelector('h3').textContent.toLowerCase();
-        const matchesSearch = name.includes(filter);
-        const matchesTab = (activeTab === 'all' || card.dataset.type === activeTab);
-        card.style.display = (matchesSearch && matchesTab) ? 'flex' : 'none';
-    });
-});
-
+// Load App
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('current-date').textContent = new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-
     buildStudentList();
     setupTabs();
 
@@ -243,128 +192,49 @@ document.addEventListener('DOMContentLoaded', () => {
             const id = child.key;
             const data = child.val();
             const card = document.querySelector(`.student-item[data-id="${id}"]`);
-
             if (card) {
                 card.querySelector(`#${id}-lastCheckIn`).textContent = formatTimestamp(data.lastCheckIn);
                 card.querySelector(`#${id}-lastCheckOut`).textContent = formatTimestamp(data.lastCheckOut);
                 card.querySelector(`#${id}-lastSunscreen`).textContent = formatTimestamp(data.lastSunscreen);
-
                 card.classList.remove('checked-in', 'checked-out');
-                if (data.lastCheckIn && (!data.lastCheckOut || data.lastCheckIn > data.lastCheckOut)) {
-                    card.classList.add('checked-in');
-                } else if (data.lastCheckOut) {
-                    card.classList.add('checked-out'); 
-                }
+                if (data.lastCheckIn && (!data.lastCheckOut || data.lastCheckIn > data.lastCheckOut)) card.classList.add('checked-in');
+                else if (data.lastCheckOut) card.classList.add('checked-out'); 
             }
         });
         updatePresentCounter(); 
     });
 
-    // NEW: Updated History Viewer to build the accordion and read the detailed times
     historyRef.orderByKey().on('value', snapshot => {
         const historyContainer = document.getElementById('history-content');
         historyContainer.innerHTML = '';
-        
-        let records = [];
-        snapshot.forEach(child => { records.push(child.val()); });
-        
-        records.reverse().forEach(record => {
-            const presentCount = record.present ? record.present.length : 0;
-            const absentCount = record.absent ? record.absent.length : 0;
-
+        snapshot.forEach(child => {
+            const record = child.val();
+            const id = child.key;
             const historyItem = document.createElement('div');
             historyItem.className = 'history-record';
             
-            // Build Present List
-            let presentHtml = '';
-            if (record.present && presentCount > 0) {
-                record.present.forEach(s => {
-                    // Handles the older basic saves and the new detailed saves
-                    if (typeof s === 'string') {
-                         presentHtml += `<div class="history-student-row"><span class="history-student-name">${s}</span></div>`;
-                    } else {
-                         presentHtml += `
-                         <div class="history-student-row">
-                             <span class="history-student-name">${s.name}</span>
-                             <span class="history-student-times">
-                                 <span><strong>In:</strong> ${s.timeIn}</span> 
-                                 <span><strong>Out:</strong> ${s.timeOut}</span>
-                                 <span><strong>Sun:</strong> ${s.sunscreen}</span>
-                             </span>
-                         </div>`;
-                    }
-                });
-            } else { presentHtml = '<p>None</p>'; }
-
-            // Build Absent List
-            let absentHtml = '';
-            if (record.absent && absentCount > 0) {
-                record.absent.forEach(s => {
-                    const nameToDisplay = typeof s === 'string' ? s : s.name;
-                    absentHtml += `<div class="history-student-row"><span class="history-student-name">${nameToDisplay}</span></div>`;
-                });
-            } else { absentHtml = '<p>None</p>'; }
+            let tableHtml = `<table class="history-table"><thead><tr><th>Name</th><th>Status</th><th>In</th><th>Out</th><th>Sun</th></tr></thead><tbody>`;
+            (record.present || []).forEach(s => tableHtml += `<tr><td>${s.name}</td><td><span class="table-badge badge-present">Present</span></td><td>${s.timeIn}</td><td>${s.timeOut}</td><td>${s.sunscreen}</td></tr>`);
+            (record.absent || []).forEach(s => tableHtml += `<tr><td>${typeof s === 'string' ? s : s.name}</td><td><span class="table-badge badge-absent">Absent</span></td><td>-</td><td>-</td><td>-</td></tr>`);
+            tableHtml += `</tbody></table>`;
 
             historyItem.innerHTML = `
                 <div class="history-header">
-                    <span>📅 ${record.date} — Present: ${presentCount}</span>
-                    <span class="history-toggle-icon">▼</span>
+                    <span>📅 ${record.date}</span>
+                    <button class="delete-history-btn" data-id="${id}">Delete</button>
                 </div>
-                <div class="history-details">
-                    <div class="student-history-grid">
-                        <div class="history-category">
-                            <h5>Present (${presentCount})</h5>
-                            ${presentHtml}
-                        </div>
-                        <div class="history-category">
-                            <h5>Absent (${absentCount})</h5>
-                            ${absentHtml}
-                        </div>
-                    </div>
-                </div>
+                <div class="history-details">${tableHtml}</div>
             `;
-            
-            // Allow clicking to expand/collapse
-            historyItem.querySelector('.history-header').addEventListener('click', () => {
-                historyItem.classList.toggle('expanded');
+            historyItem.querySelector('.history-header').addEventListener('click', (e) => {
+                if(!e.target.classList.contains('delete-history-btn')) historyItem.classList.toggle('expanded');
             });
-
+            historyItem.querySelector('.delete-history-btn').addEventListener('click', () => {
+                if(confirm('Delete this record?')) historyRef.child(id).remove();
+            });
             historyContainer.appendChild(historyItem);
         });
     });
 
-    document.getElementById('resetAllButton').addEventListener('click', () => {
-        if (confirm('Clear today\'s board? Make sure you saved a PDF/History first!')) {
-            database.ref('students').remove();
-        }
-    });
-
-    document.getElementById('savePdfButton').addEventListener('click', () => {
-        saveToHistory(); 
-        
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('p', 'pt', 'letter');
-        doc.setFontSize(20);
-        doc.text("Daily Attendance Report", doc.internal.pageSize.getWidth() / 2, 60, { align: "center" });
-        doc.setFontSize(12);
-        doc.text(new Date().toLocaleDateString(), doc.internal.pageSize.getWidth() / 2, 85, { align: "center" });
-
-        const body = [];
-        document.querySelectorAll('.student-item').forEach(card => {
-            if (!card.classList.contains('not-scheduled')) {
-                const nameElement = card.querySelector('h3').cloneNode(true);
-                const badge = nameElement.querySelector('span');
-                if(badge) badge.remove();
-                const name = nameElement.textContent.trim();
-                
-                let status = "Absent";
-                if (card.classList.contains('checked-in')) status = "Present";
-                if (card.classList.contains('checked-out')) status = "Checked Out";
-                body.push([name, status]);
-            }
-        });
-
-        doc.autoTable({ head: [['Expected Student', 'Final Status']], body: body, startY: 100 });
-        doc.save("Attendance.pdf");
-    });
+    document.getElementById('resetAllButton').addEventListener('click', () => { if(confirm('Clear today?')) database.ref('students').remove(); });
+    document.getElementById('savePdfButton').addEventListener('click', saveToHistory);
 });
