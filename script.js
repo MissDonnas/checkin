@@ -14,36 +14,55 @@ const database = firebase.database();
 const studentsRef = database.ref('students');
 const historyRef = database.ref('history');
 
+
+const CAMP_START_DATE = new Date("2026-07-06T00:00:00"); 
+
+
 const studentRoster = [
-    { id: "beilfussm", name: "Magnolia Beilfuss", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
-    { id: "boggsn", name: "Nora Boggs", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
-    { id: "boggsb", name: "Ben Boggs", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
-    { id: "bonoguv", name: "Vibha Bonogu", type: "short", days: ["Tuesday", "Wednesday", "Thursday"] },
-    { id: "brothersm", name: "Maddie Brothers", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
-    { id: "brothersc", name: "Clayton Brothers", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
-    { id: "brothersma", name: "Mali Brothers", type: "short", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
-    { id: "brotherst", name: "Theodore Brothers", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
-    { id: "dosreyn", name: "Nico Dosrey", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
-    { id: "freemano", name: "OLiver Freeman", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
-    { id: "freemans", name: "Sophia Freeman", type: "full", days: ["Tuesday", "Wednesday", "Thursday"] },
-    { id: "furlongl", name: "Logan Furlong", type: "full", days: ["Tuesday", "Wednesday", "Thursday"] },
-    { id: "hohlp", name: "Peter Hohl", type: "full", days: ["Tuesday", "Wednesday", "Thursday"] },
-    { id: "Kroningl", name: "Lenny Kroning", type: "full", days: ["Tuesday", "Wednesday", "Thursday"] },
-    { id: "laffeyc", name: "Claire Laffey", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
-    { id: "laffeyj", name: "Jack Laffey", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
-    { id: "montize", name: "Emma Montiz", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
-    { id: "mullenm", name: "Mackenzie Mullen", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
-    { id: "mullenr", name: "Riverly Mullen", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
-    { id: "pernaas", name: "Asa Perna", type: "short", days: ["Tuesday", "Wednesday", "Thursday"] },
-    { id: "pernaav", name: "Ava Perna", type: "short", days: ["Tuesday", "Wednesday", "Thursday"] },
-    { id: "porterh", name: "Harper Porter", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
-    { id: "sarveshm", name: "Meera Sarvesh", type: "short", days: ["Tuesday", "Wednesday", "Thursday"] },
-    { id: "shinlor", name: "Loryn Shin", type: "short", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
-    { id: "shinlog", name: "Logan Shin", type: "short", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
-    { id: "vazquezr", name: "Raymond Vazquez", type: "short", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
-    { id: "velagapudia", name: "Abhinav Velagapudi", type: "short", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
-    { id: "vennas", name: "Savarnik Venna", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] }
+    { id: "beilfussm", name: "Magnolia Beilfuss", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], weeks: [1, 2, 3, 4, 5, 6] },
+    { id: "boggsn", name: "Nora Boggs", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], weeks: [2, 3, 4, 5, 6] },
+    { id: "boggsb", name: "Ben Boggs", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], weeks: [2, 3, 4, 5, 6] },
+    { id: "bonoguv", name: "Vibha Bonogu", type: "short", days: ["Tuesday", "Wednesday", "Thursday"], weeks: [1, 2, 3, 4, 5, 6] },
+    { id: "brothersm", name: "Maddie Brothers", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], weeks: [1, 3, 4, 5, 6] },
+    { id: "brothersc", name: "Clayton Brothers", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], weeks: [1, 3, 4, 5, 6] },
+    { id: "brothersma", name: "Mali Brothers", type: "short", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], weeks: [1, 3, 4, 5, 6] },
+    { id: "brotherst", name: "Theodore Brothers", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], weeks: [1, 3, 4, 5, 6] },
+    { id: "dosreyn", name: "Nico Dosrey", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], weeks: [1, 2, 3, 4, 5, 6] },
+    { id: "freemano", name: "OLiver Freeman", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], weeks: [1, 2, 3, 4, 5, 6] },
+    { id: "freemans", name: "Sophia Freeman", type: "full", days: ["Tuesday", "Wednesday", "Thursday"], weeks: [1, 2, 3, 4, 5, 6] },
+    { id: "furlongl", name: "Logan Furlong", type: "full", days: ["Tuesday", "Wednesday", "Thursday"], weeks: [1, 2, 3, 4, 5, 6] },
+    { id: "hohlp", name: "Peter Hohl", type: "full", days: ["Tuesday", "Wednesday", "Thursday"], weeks: [1, 3, 6] },
+    { id: "Kroningl", name: "Lenny Kroning", type: "full", days: ["Tuesday", "Wednesday", "Thursday"], weeks: [1, 2, 3, 4, 5, 6] },
+    { id: "laffeyc", name: "Claire Laffey", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], weeks: [1, 2, 4, 5, 6] },
+    { id: "laffeyj", name: "Jack Laffey", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], weeks: [1, 2, 4, 5, 6] },
+    { id: "montize", name: "Emma Montiz", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], weeks: [1, 2, 3, 4, 5, 6] },
+    { id: "mullenm", name: "Mackenzie Mullen", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], weeks: [2, 3, 4, 5, 6] },
+    { id: "mullenr", name: "Riverly Mullen", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], weeks: [2, 3, 4, 5, 6] },
+    { id: "pernaas", name: "Asa Perna", type: "short", days: ["Tuesday", "Wednesday", "Thursday"], weeks: [1, 2, 3, 4, 5, 6] },
+    { id: "pernaav", name: "Ava Perna", type: "short", days: ["Tuesday", "Wednesday", "Thursday"], weeks: [1, 2, 3, 4, 5, 6] },
+    { id: "porterh", name: "Harper Porter", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], weeks: [1, 2, 3, 4, 5, 6] },
+    { id: "sarveshm", name: "Meera Sarvesh", type: "short", days: ["Tuesday", "Wednesday", "Thursday"], weeks: [1, 2, 3, 4, 5, 6] },
+    { id: "shinlor", name: "Loryn Shin", type: "short", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], weeks: [2, 3, 4, 5, 6] },
+    { id: "shinlog", name: "Logan Shin", type: "short", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], weeks: [2, 3, 4, 5, 6] },
+    { id: "vazquezr", name: "Raymond Vazquez", type: "short", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], weeks: [1, 2, 3, 4, 5, 6] },
+    { id: "velagapudia", name: "Abhinav Velagapudi", type: "short", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], weeks: [1, 2, 3, 4, 5, 6] },
+    { id: "vennas", name: "Savarnik Venna", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], weeks: [1, 2, 3, 5, 6] }
 ];
+
+
+function getCurrentCampWeek() {
+    const today = new Date();
+    
+    today.setHours(0,0,0,0);
+    
+    const diffTime = today - CAMP_START_DATE;
+    
+    if (diffTime < 0) return 1; 
+    
+
+    const weeksPassed = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
+    return weeksPassed + 1;
+}
 
 function formatTimestamp(timestamp) {
     if (!timestamp) return 'N/A';
@@ -53,12 +72,28 @@ function formatTimestamp(timestamp) {
 function buildStudentList() {
     const listContainer = document.getElementById('student-list');
     listContainer.innerHTML = ''; 
+    
     const todayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+    const currentWeek = getCurrentCampWeek();
+    
+    // Update a sub-header or title if you want to display the current camp week
+    const titleElement = document.getElementById('current-date');
+    if (titleElement) {
+        titleElement.innerHTML = `${new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} <br><span style="font-size: 0.9em; color: #555;">Camp Week: ${currentWeek}</span>`;
+    }
 
     let scheduledTotal = 0, scheduledFull = 0, scheduledShort = 0;
 
     studentRoster.forEach(student => {
+        // FIRST CONDITION: Is the student even registered for this week of camp?
+        const isRegisteredThisWeek = student.weeks.includes(currentWeek);
+        
+        // If they aren't registered for this week at all, bypass creating a card for them entirely
+        if (!isRegisteredThisWeek) return;
+
+        // SECOND CONDITION: Are they scheduled to be here on this specific weekday?
         const isScheduledToday = student.days.includes(todayName);
+        
         let badgeHtml = !isScheduledToday ? `<span class="badge-not-scheduled">Not Scheduled Today</span>` : 
                         (student.type === 'full' ? `<span class="badge-full">Full Day</span>` : `<span class="badge-short">Shortened</span>`);
         
@@ -155,7 +190,6 @@ function saveToHistory() {
     historyRef.child(timestampId).set(snapshotData);
 }
 
-// History Event Listeners
 document.getElementById('student-list').addEventListener('click', (event) => {
     if(event.target.tagName !== 'BUTTON') return;
     const id = event.target.dataset.id;
@@ -164,9 +198,7 @@ document.getElementById('student-list').addEventListener('click', (event) => {
     else if (event.target.classList.contains('sunscreen-btn')) updateStudentStatus(id, 'lastSunscreen');
 });
 
-// Load App
 document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('current-date').textContent = new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     buildStudentList();
     setupTabs();
 
