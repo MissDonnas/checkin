@@ -41,7 +41,6 @@ const studentRoster = [
     { id: "shinlor", name: "Loryn Shin", type: "short", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
     { id: "shinlog", name: "Logan Shin", type: "short", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
     { id: "vazquezr", name: "Raymond Vazquez", type: "short", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
-    { id: "vazquezr", name: "Raymond Vazquez", type: "short", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
     { id: "velagapudia", name: "Abhinav Velagapudi", type: "short", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] },
     { id: "vennas", name: "Savarnik Venna", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] }
 ];
@@ -55,7 +54,6 @@ function buildStudentList() {
     const listContainer = document.getElementById('student-list');
     listContainer.innerHTML = ''; 
     const todayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
-    studentRoster.sort((a, b) => a.name.localeCompare(b.name));
 
     let scheduledTotal = 0, scheduledFull = 0, scheduledShort = 0;
 
