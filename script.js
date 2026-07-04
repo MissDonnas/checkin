@@ -14,9 +14,7 @@ const database = firebase.database();
 const studentsRef = database.ref('students');
 const historyRef = database.ref('history');
 
-
 const CAMP_START_DATE = new Date("2026-07-06T00:00:00"); 
-
 
 const studentRoster = [
     { id: "adamsi", name: "Isaac Adams", type: "full", days: ["Tuesday", "Wednesday", "Thursday", "Friday"], weeks: [1, 2, 3, 5, 6] },
@@ -58,19 +56,13 @@ const studentRoster = [
     { id: "velagapudia", name: "Abhinav Velagapudi", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], weeks: [1, 2, 3, 4, 5, 6] },
     { id: "vennas", name: "Savarnik Venna", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], weeks: [1, 2, 3, 5, 6] },
     { id: "wingl", name: "Leona Wing", type: "short", days: ["Tuesday", "Wednesday", "Thursday"], weeks: [1, 2, 3, 4, 5, 6] }
-
 ];
-
 
 function getCurrentCampWeek() {
     const today = new Date();
-    
     today.setHours(0,0,0,0);
-    
     const diffTime = today - CAMP_START_DATE;
-    
     if (diffTime < 0) return 1; 
-    
 
     const weeksPassed = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
     return weeksPassed + 1;
@@ -88,7 +80,6 @@ function buildStudentList() {
     const todayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
     const currentWeek = getCurrentCampWeek();
     
-    // Update a sub-header or title if you want to display the current camp week
     const titleElement = document.getElementById('current-date');
     if (titleElement) {
         titleElement.innerHTML = `${new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} <br><span style="font-size: 0.9em; color: #555;">Camp Week: ${currentWeek}</span>`;
@@ -97,9 +88,7 @@ function buildStudentList() {
     let scheduledTotal = 0, scheduledFull = 0, scheduledShort = 0;
 
     studentRoster.forEach(student => {
-
         const isRegisteredThisWeek = student.weeks.includes(currentWeek);
-        
         if (!isRegisteredThisWeek) return;
 
         const isScheduledToday = student.days.includes(todayName);
@@ -161,7 +150,10 @@ function setupTabs() {
                 document.getElementById('view-history').style.display = 'none';
                 document.querySelector('.search-container').style.display = 'block';
                 document.querySelectorAll('.student-item').forEach(card => {
-                    card.style.display = (target === 'all' || card.dataset.type === target) ? 'flex' : 'none';
+                    // FIX: Ensures tab filtering doesn't accidentally reveal students not scheduled for today
+                    const matchesTab = (target === 'all' || card.dataset.type === target);
+                    const isScheduled = !card.classList.contains('not-scheduled');
+                    card.style.display = (matchesTab && isScheduled) ? 'flex' : 'none';
                 });
             }
         });
@@ -184,18 +176,27 @@ function saveToHistory() {
     let snapshotData = { date: dateString, present: [], absent: [] };
 
     document.querySelectorAll('.student-item').forEach(card => {
+        const studentId = card.dataset.id;
         const nameElement = card.querySelector('h3').cloneNode(true);
         const badge = nameElement.querySelector('span');
         if(badge) badge.remove();
+        
+        const timeInText = card.querySelector(`#${studentId}-lastCheckIn`).textContent;
+        const timeOutText = card.querySelector(`#${studentId}-lastCheckOut`).textContent;
+
         const studentInfo = {
             name: nameElement.textContent.trim(),
-            timeIn: card.querySelector(`#${card.dataset.id}-lastCheckIn`).textContent,
-            timeOut: card.querySelector(`#${card.dataset.id}-lastCheckOut`).textContent,
-            sunscreen: card.querySelector(`#${card.dataset.id}-lastSunscreen`).textContent
+            timeIn: timeInText,
+            timeOut: timeOutText,
+            sunscreen: card.querySelector(`#${studentId}-lastSunscreen`).textContent
         };
 
-        if (card.classList.contains('checked-in') && !card.classList.contains('checked-out')) snapshotData.present.push(studentInfo);
-        else if (!card.classList.contains('not-scheduled')) snapshotData.absent.push(studentInfo);
+        // FIX: If they checked in at any point today, they were present. Otherwise, they were absent.
+        if (timeInText !== 'N/A') {
+            snapshotData.present.push(studentInfo);
+        } else if (!card.classList.contains('not-scheduled')) {
+            snapshotData.absent.push(studentInfo);
+        }
     });
     historyRef.child(timestampId).set(snapshotData);
 }
@@ -212,18 +213,31 @@ document.addEventListener('DOMContentLoaded', () => {
     buildStudentList();
     setupTabs();
 
+    // Listens to database updates safely
     studentsRef.on('value', (snapshot) => {
-        snapshot.forEach((child) => {
-            const id = child.key;
-            const data = child.val();
-            const card = document.querySelector(`.student-item[data-id="${id}"]`);
-            if (card) {
+        const dataExists = snapshot.exists();
+        
+        document.querySelectorAll('.student-item').forEach((card) => {
+            const id = card.dataset.id;
+            
+            if (dataExists && snapshot.hasChild(id)) {
+                const data = snapshot.child(id).val();
                 card.querySelector(`#${id}-lastCheckIn`).textContent = formatTimestamp(data.lastCheckIn);
                 card.querySelector(`#${id}-lastCheckOut`).textContent = formatTimestamp(data.lastCheckOut);
                 card.querySelector(`#${id}-lastSunscreen`).textContent = formatTimestamp(data.lastSunscreen);
+                
                 card.classList.remove('checked-in', 'checked-out');
-                if (data.lastCheckIn && (!data.lastCheckOut || data.lastCheckIn > data.lastCheckOut)) card.classList.add('checked-in');
-                else if (data.lastCheckOut) card.classList.add('checked-out'); 
+                if (data.lastCheckIn && (!data.lastCheckOut || data.lastCheckIn > data.lastCheckOut)) {
+                    card.classList.add('checked-in');
+                } else if (data.lastCheckOut) {
+                    card.classList.add('checked-out');
+                }
+            } else {
+
+                card.querySelector(`#${id}-lastCheckIn`).textContent = 'N/A';
+                card.querySelector(`#${id}-lastCheckOut`).textContent = 'N/A';
+                card.querySelector(`#${id}-lastSunscreen`).textContent = 'N/A';
+                card.classList.remove('checked-in', 'checked-out');
             }
         });
         updatePresentCounter(); 
@@ -260,33 +274,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    document.getElementById('resetAllButton').addEventListener('click', () => {
-    if (confirm('Are you sure you want to reset everyone\'s times for today?')) {
-        const resetUpdates = {};
-        
-        studentRoster.forEach(student => {
-            resetUpdates[`/${student.id}/lastCheckIn`] = null;
-            resetUpdates[`/${student.id}/lastCheckOut`] = null;
-            resetUpdates[`/${student.id}/lastSunscreen`] = null;
-            resetUpdates[`/${student.id}/checkedIn`] = false;
-        });
-
-        database.ref('students').update(resetUpdates, (error) => {
-            if (error) {
-                console.error("Reset failed:", error);
-                alert("Something went wrong while resetting data.");
-            } else {
-                
-                document.querySelectorAll('.student-item').forEach(card => {
-                    const id = card.dataset.id;
-                    card.querySelector(`#${id}-lastCheckIn`).textContent = 'N/A';
-                    card.querySelector(`#${id}-lastCheckOut`).textContent = 'N/A';
-                    card.querySelector(`#${id}-lastSunscreen`).textContent = 'N/A';
-                    card.classList.remove('checked-in', 'checked-out');
-                });
-                updatePresentCounter();
-                alert("All attendance times have been successfully reset!");
-            }
-        });
-    }
+    document.getElementById('resetAllButton').addEventListener('click', () => { 
+        if(confirm('Are you sure you want to reset everyone\'s times to N/A?')) {
+            const resetUpdates = {};
+            studentRoster.forEach(student => {
+                resetUpdates[`/${student.id}/lastCheckIn`] = null;
+                resetUpdates[`/${student.id}/lastCheckOut`] = null;
+                resetUpdates[`/${student.id}/lastSunscreen`] = null;
+                resetUpdates[`/${student.id}/checkedIn`] = false;
+            });
+            database.ref('students').update(resetUpdates);
+        }
+    });
+    
+    document.getElementById('savePdfButton').addEventListener('click', saveToHistory);
 });
