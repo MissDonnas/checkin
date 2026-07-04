@@ -97,13 +97,11 @@ function buildStudentList() {
     let scheduledTotal = 0, scheduledFull = 0, scheduledShort = 0;
 
     studentRoster.forEach(student => {
-        // FIRST CONDITION: Is the student even registered for this week of camp?
+
         const isRegisteredThisWeek = student.weeks.includes(currentWeek);
         
-        // If they aren't registered for this week at all, bypass creating a card for them entirely
         if (!isRegisteredThisWeek) return;
 
-        // SECOND CONDITION: Are they scheduled to be here on this specific weekday?
         const isScheduledToday = student.days.includes(todayName);
         
         let badgeHtml = !isScheduledToday ? `<span class="badge-not-scheduled">Not Scheduled Today</span>` : 
@@ -262,6 +260,33 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    document.getElementById('resetAllButton').addEventListener('click', () => { if(confirm('Clear today?')) database.ref('students').remove(); });
-    document.getElementById('savePdfButton').addEventListener('click', saveToHistory);
+    document.getElementById('resetAllButton').addEventListener('click', () => {
+    if (confirm('Are you sure you want to reset everyone\'s times for today?')) {
+        const resetUpdates = {};
+        
+        studentRoster.forEach(student => {
+            resetUpdates[`/${student.id}/lastCheckIn`] = null;
+            resetUpdates[`/${student.id}/lastCheckOut`] = null;
+            resetUpdates[`/${student.id}/lastSunscreen`] = null;
+            resetUpdates[`/${student.id}/checkedIn`] = false;
+        });
+
+        database.ref('students').update(resetUpdates, (error) => {
+            if (error) {
+                console.error("Reset failed:", error);
+                alert("Something went wrong while resetting data.");
+            } else {
+                
+                document.querySelectorAll('.student-item').forEach(card => {
+                    const id = card.dataset.id;
+                    card.querySelector(`#${id}-lastCheckIn`).textContent = 'N/A';
+                    card.querySelector(`#${id}-lastCheckOut`).textContent = 'N/A';
+                    card.querySelector(`#${id}-lastSunscreen`).textContent = 'N/A';
+                    card.classList.remove('checked-in', 'checked-out');
+                });
+                updatePresentCounter();
+                alert("All attendance times have been successfully reset!");
+            }
+        });
+    }
 });
