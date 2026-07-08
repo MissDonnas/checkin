@@ -1,4 +1,4 @@
-Const firebaseConfig = {
+const firebaseConfig = {
     apiKey: "AIzaSyBrK1aMhBv3SL-slt1AN0XaYszc2fsPzQ",
     authDomain: "attendance-6abf9.firebaseapp.com",
     databaseURL: "https://attendance-6abf9-default-rtdb.firebaseio.com",
