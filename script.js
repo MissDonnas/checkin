@@ -40,6 +40,7 @@ const studentRoster = [
     { id: "freemano", name: "Oliver Freeman", type: "short", days: ["Tuesday", "Wednesday", "Thursday"], weeks: [1, 2, 3, 4, 5, 6] },
     { id: "freemans", name: "Sophia Freeman", type: "short", days: ["Tuesday", "Wednesday", "Thursday"], weeks: [1, 2, 3, 4, 5, 6] },
     { id: "furlongl", name: "Logan Furlong", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], weeks: [1, 2, 3, 4, 5, 6] },
+    { id: "hohlc", name: "Charlie Hohl", type: "short", days: ["Tuesday", "Wednesday", "Thursday"], weeks: [1, 3, 6] },
     { id: "hohlp", name: "Peter Hohl", type: "short", days: ["Tuesday", "Wednesday", "Thursday"], weeks: [1, 3, 6] },
     { id: "kokoszkaj", name: "James Kokoszka", type: "short", days: ["Tuesday", "Wednesday", "Thursday"], weeks: [1, 2, 3, 4, 5, 6] },
     { id: "kroningl", name: "Lenny Kroning", type: "short", days: ["Tuesday", "Wednesday", "Thursday"], weeks: [1, 2, 3, 4, 5, 6] },
