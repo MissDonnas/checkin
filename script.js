@@ -12,78 +12,79 @@ firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 const studentsRef = database.ref('students');
 
-// Helper to calculate status
-function isPresent(data) {
-    if (!data.lastCheckIn) return false;
-    // If no checkout OR checkin happened after checkout
-    return !data.lastCheckOut || data.lastCheckIn > data.lastCheckOut;
+const CAMP_START_DATE = new Date("2026-07-06T00:00:00");
+const studentRoster = [
+    { id: "adamsi", name: "Isaac Adams", type: "full", days: ["Tuesday", "Wednesday", "Thursday", "Friday"], weeks: [1, 2, 3, 5, 6] },
+    /* ... (Ensure your full studentRoster array is here) ... */
+    { id: "wingl", name: "Leona Wing", type: "short", days: ["Tuesday", "Wednesday", "Thursday"], weeks: [1, 2, 3, 4, 5, 6] }
+];
+
+function getCurrentCampWeek() {
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const diffTime = today - CAMP_START_DATE;
+    return diffTime < 0 ? 1 : Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7)) + 1;
 }
 
 function updatePresentCounter() {
-    // Count all cards that have the checked-in state
-    const allCards = document.querySelectorAll('.student-item');
-    let count = 0;
-    allCards.forEach(card => {
-        if (card.classList.contains('checked-in')) count++;
-    });
-    document.getElementById('studentsPresentCount').textContent = count;
+    const presentCount = document.querySelectorAll('.student-item.checked-in').length;
+    document.getElementById('studentsPresentCount').textContent = presentCount;
 }
 
 function applyFilters() {
     const searchTerm = document.getElementById('search-input').value.toLowerCase();
     const activeTab = document.querySelector('.tab-btn.active').dataset.target;
-
     document.querySelectorAll('.student-item').forEach(card => {
         const name = card.querySelector('h3').textContent.toLowerCase();
         const type = card.dataset.type;
         const isScheduled = !card.classList.contains('not-scheduled');
-        
-        const matchesSearch = name.includes(searchTerm);
-        const matchesTab = (activeTab === 'all' || type === activeTab);
-        
-        card.style.display = (matchesSearch && matchesTab && isScheduled) ? 'flex' : 'none';
+        card.style.display = (name.includes(searchTerm) && (activeTab === 'all' || type === activeTab) && isScheduled) ? 'flex' : 'none';
     });
     updatePresentCounter();
 }
 
-// Main logic
-studentsRef.on('value', (snapshot) => {
-    const data = snapshot.val() || {};
+function buildStudentList() {
+    const listContainer = document.getElementById('student-list');
+    listContainer.innerHTML = '';
+    const todayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+    const currentWeek = getCurrentCampWeek();
     
-    document.querySelectorAll('.student-item').forEach(card => {
-        const id = card.dataset.id;
-        const sData = data[id] || {};
-        
-        // Update labels
-        card.querySelector(`#${id}-lastCheckIn`).textContent = sData.lastCheckIn ? new Date(sData.lastCheckIn).toLocaleTimeString([], {hour: 'numeric', minute:'2-digit'}) : 'N/A';
-        card.querySelector(`#${id}-lastCheckOut`).textContent = sData.lastCheckOut ? new Date(sData.lastCheckOut).toLocaleTimeString([], {hour: 'numeric', minute:'2-digit'}) : 'N/A';
-        card.querySelector(`#${id}-lastSunscreen`).textContent = sData.lastSunscreen ? new Date(sData.lastSunscreen).toLocaleTimeString([], {hour: 'numeric', minute:'2-digit'}) : 'N/A';
-        
-        // Toggle Class
-        if (isPresent(sData)) {
-            card.classList.add('checked-in');
-            card.classList.remove('checked-out');
-        } else if (sData.lastCheckOut) {
-            card.classList.add('checked-out');
-            card.classList.remove('checked-in');
-        } else {
-            card.classList.remove('checked-in', 'checked-out');
-        }
+    studentRoster.forEach(s => {
+        if (!s.weeks.includes(currentWeek)) return;
+        const isToday = s.days.includes(todayName);
+        const card = document.createElement('div');
+        card.className = `student-item ${isToday ? '' : 'not-scheduled'}`;
+        card.dataset.id = s.id;
+        card.dataset.type = s.type;
+        card.innerHTML = `<h3>${s.name}</h3>
+            <p>In: <strong id="${s.id}-lastCheckIn">N/A</strong></p>
+            <p>Out: <strong id="${s.id}-lastCheckOut">N/A</strong></p>
+            <button class="check-in-btn" data-id="${s.id}">In</button>
+            <button class="check-out-btn" data-id="${s.id}">Out</button>`;
+        listContainer.appendChild(card);
     });
-    updatePresentCounter();
-});
+    applyFilters();
+}
 
 document.addEventListener('DOMContentLoaded', () => {
-    // ... (Keep your buildStudentList() here) ...
     buildStudentList();
-    
     document.getElementById('search-input').addEventListener('input', applyFilters);
     
-    document.getElementById('student-list').addEventListener('click', (e) => {
-        if(!e.target.tagName === 'BUTTON') return;
+    studentsRef.on('value', (snap) => {
+        const data = snap.val() || {};
+        document.querySelectorAll('.student-item').forEach(card => {
+            const id = card.dataset.id;
+            const sData = data[id] || {};
+            card.querySelector(`#${id}-lastCheckIn`).textContent = sData.lastCheckIn ? new Date(sData.lastCheckIn).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}) : 'N/A';
+            card.classList.toggle('checked-in', sData.lastCheckIn && (!sData.lastCheckOut || sData.lastCheckIn > sData.lastCheckOut));
+        });
+        updatePresentCounter();
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.dataset.id) return;
         const id = e.target.dataset.id;
-        const typeMap = {'check-in-btn': 'lastCheckIn', 'check-out-btn': 'lastCheckOut', 'sunscreen-btn': 'lastSunscreen'};
-        const key = typeMap[e.target.className];
-        if(key) database.ref(`students/${id}/${key}`).set(Date.now());
+        if (e.target.className === 'check-in-btn') database.ref(`students/${id}/lastCheckIn`).set(Date.now());
+        if (e.target.className === 'check-out-btn') database.ref(`students/${id}/lastCheckOut`).set(Date.now());
     });
 });
