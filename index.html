@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Check-in/Check-out</title>
+    <title>Student Attendance</title>
     <link rel="stylesheet" href="style.css">
 
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -19,10 +19,10 @@
         <div id="current-date" class="current-date"></div>
 
         <div id="status-bar" class="status-bar">
-            <div class="stat-box">Total Scheduled: <strong id="totalScheduledCount">0</strong></div>
-            <div class="stat-box">Scheduled Full: <strong id="fullScheduledCount">0</strong></div>
-            <div class="stat-box">Scheduled Short: <strong id="shortScheduledCount">0</strong></div>
-            <div class="stat-box highlight">Currently Present: <strong id="studentsPresentCount">0</strong></div>
+            <div class="stat-box">Total: <strong id="totalScheduledCount">0</strong></div>
+            <div class="stat-box">Full: <strong id="fullScheduledCount">0</strong></div>
+            <div class="stat-box">Short: <strong id="shortScheduledCount">0</strong></div>
+            <div class="stat-box highlight">Present: <strong id="studentsPresentCount">0</strong></div>
         </div>
 
         <div class="top-buttons">
