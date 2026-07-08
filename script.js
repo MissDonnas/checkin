@@ -74,7 +74,6 @@ function getCurrentCampWeek() {
     today.setHours(0,0,0,0);
     const diffTime = today - CAMP_START_DATE;
     if (diffTime < 0) return 1; 
-
     const weeksPassed = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
     return weeksPassed + 1;
 }
@@ -87,31 +86,23 @@ function formatTimestamp(timestamp) {
 function buildStudentList() {
     const listContainer = document.getElementById('student-list');
     listContainer.innerHTML = ''; 
-
     const todayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
     const currentWeek = getCurrentCampWeek();
-
     const titleElement = document.getElementById('current-date');
     if (titleElement) {
         titleElement.innerHTML = `${new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} <br><span style="font-size: 0.9em; color: #555;">Camp Week: ${currentWeek}</span>`;
     }
-
     let scheduledTotal = 0, scheduledFull = 0, scheduledShort = 0;
-
     studentRoster.forEach(student => {
         const isRegisteredThisWeek = student.weeks.includes(currentWeek);
         if (!isRegisteredThisWeek) return;
-
         const isScheduledToday = student.days.includes(todayName);
-
         let badgeHtml = !isScheduledToday ? `<span class="badge-not-scheduled">Not Scheduled Today</span>` : 
                         (student.type === 'full' ? `<span class="badge-full">Full Day</span>` : `<span class="badge-short">Shortened</span>`);
-
         if (isScheduledToday) {
             student.type === 'full' ? scheduledFull++ : scheduledShort++;
             scheduledTotal++;
         }
-
         const card = document.createElement('div');
         card.className = `student-item ${isScheduledToday ? '' : 'not-scheduled'}`;
         card.dataset.id = student.id;
@@ -131,7 +122,6 @@ function buildStudentList() {
         `;
         listContainer.appendChild(card);
     });
-
     document.getElementById('totalScheduledCount').textContent = scheduledTotal;
     document.getElementById('fullScheduledCount').textContent = scheduledFull;
     document.getElementById('shortScheduledCount').textContent = scheduledShort;
@@ -161,11 +151,31 @@ function setupTabs() {
                 document.getElementById('view-history').style.display = 'none';
                 document.querySelector('.search-container').style.display = 'block';
                 document.querySelectorAll('.student-item').forEach(card => {
-                    // FIX: Ensures tab filtering doesn't accidentally reveal students not scheduled for today
                     const matchesTab = (target === 'all' || card.dataset.type === target);
                     const isScheduled = !card.classList.contains('not-scheduled');
                     card.style.display = (matchesTab && isScheduled) ? 'flex' : 'none';
                 });
+            }
+        });
+    });
+}
+
+function setupSearch() {
+    const searchInput = document.getElementById('studentSearch');
+    searchInput.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        const studentCards = document.querySelectorAll('.student-item');
+        const activeTab = document.querySelector('.tab-btn.active').dataset.target;
+        
+        studentCards.forEach(card => {
+            const name = card.querySelector('h3').textContent.toLowerCase();
+            const matchesTab = (activeTab === 'all' || card.dataset.type === activeTab);
+            const isScheduled = !card.classList.contains('not-scheduled');
+            
+            if (name.includes(searchTerm) && matchesTab && isScheduled) {
+                card.style.display = 'flex';
+            } else {
+                card.style.display = 'none';
             }
         });
     });
@@ -185,24 +195,19 @@ function saveToHistory() {
     const dateString = now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
     const timestampId = Date.now();
     let snapshotData = { date: dateString, present: [], absent: [] };
-
     document.querySelectorAll('.student-item').forEach(card => {
         const studentId = card.dataset.id;
         const nameElement = card.querySelector('h3').cloneNode(true);
         const badge = nameElement.querySelector('span');
         if(badge) badge.remove();
-
         const timeInText = card.querySelector(`#${studentId}-lastCheckIn`).textContent;
         const timeOutText = card.querySelector(`#${studentId}-lastCheckOut`).textContent;
-
         const studentInfo = {
             name: nameElement.textContent.trim(),
             timeIn: timeInText,
             timeOut: timeOutText,
             sunscreen: card.querySelector(`#${studentId}-lastSunscreen`).textContent
         };
-
-        // FIX: If they checked in at any point today, they were present. Otherwise, they were absent.
         if (timeInText !== 'N/A') {
             snapshotData.present.push(studentInfo);
         } else if (!card.classList.contains('not-scheduled')) {
@@ -223,20 +228,17 @@ document.getElementById('student-list').addEventListener('click', (event) => {
 document.addEventListener('DOMContentLoaded', () => {
     buildStudentList();
     setupTabs();
+    setupSearch(); 
 
-    // Listens to database updates safely
     studentsRef.on('value', (snapshot) => {
         const dataExists = snapshot.exists();
-
         document.querySelectorAll('.student-item').forEach((card) => {
             const id = card.dataset.id;
-
             if (dataExists && snapshot.hasChild(id)) {
                 const data = snapshot.child(id).val();
                 card.querySelector(`#${id}-lastCheckIn`).textContent = formatTimestamp(data.lastCheckIn);
                 card.querySelector(`#${id}-lastCheckOut`).textContent = formatTimestamp(data.lastCheckOut);
                 card.querySelector(`#${id}-lastSunscreen`).textContent = formatTimestamp(data.lastSunscreen);
-
                 card.classList.remove('checked-in', 'checked-out');
                 if (data.lastCheckIn && (!data.lastCheckOut || data.lastCheckIn > data.lastCheckOut)) {
                     card.classList.add('checked-in');
@@ -244,7 +246,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     card.classList.add('checked-out');
                 }
             } else {
-
                 card.querySelector(`#${id}-lastCheckIn`).textContent = 'N/A';
                 card.querySelector(`#${id}-lastCheckOut`).textContent = 'N/A';
                 card.querySelector(`#${id}-lastSunscreen`).textContent = 'N/A';
@@ -262,12 +263,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const id = child.key;
             const historyItem = document.createElement('div');
             historyItem.className = 'history-record';
-
             let tableHtml = `<table class="history-table"><thead><tr><th>Name</th><th>Status</th><th>In</th><th>Out</th><th>Sun</th></tr></thead><tbody>`;
             (record.present || []).forEach(s => tableHtml += `<tr><td>${s.name}</td><td><span class="table-badge badge-present">Present</span></td><td>${s.timeIn}</td><td>${s.timeOut}</td><td>${s.sunscreen}</td></tr>`);
             (record.absent || []).forEach(s => tableHtml += `<tr><td>${typeof s === 'string' ? s : s.name}</td><td><span class="table-badge badge-absent">Absent</span></td><td>-</td><td>-</td><td>-</td></tr>`);
             tableHtml += `</tbody></table>`;
-
             historyItem.innerHTML = `
                 <div class="history-header">
                     <span>📅 ${record.date}</span>
