@@ -63,6 +63,7 @@ const studentRoster = [
     { id: "shinlor", name: "Loryn Shin", type: "short", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], weeks: [2, 3, 4, 5, 6] },
     { id: "shinlog", name: "Logan Shin", type: "short", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], weeks: [2, 3, 4, 5, 6] },
     { id: "thompsonb", name: "Benjamin Thompson", type: "short", days: ["Tuesday", "Wednesday", "Thursday", "Friday"], weeks: [1, 2, 3, 4, 5, 6] },
+    { id: "vaghelaza", name: "Avi Vaghelaz", type: "full", days: ["Tuesday", "Wednesday"], weeks: [1, 2, 3, 4, 5, 6] },
     { id: "vazquezr", name: "Raymond Vazquez", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], weeks: [1, 2, 3, 4, 5, 6] },
     { id: "velagapudia", name: "Abhinav Velagapudi", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], weeks: [1, 2, 3, 4, 5, 6] },
     { id: "vennas", name: "Savarnik Venna", type: "full", days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], weeks: [1, 2, 3, 5, 6] },
